@@ -1,0 +1,14 @@
+.chip{border:1px solid rgba(148,163,184,.3)}
+.pointer{width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:18px solid #22c55e;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.card.done{opacity:.85}
+.card.archived{opacity:.6;filter:grayscale(100%)}
+
+/* Light theme – clean & readable */
+body.light{background:#f8fafc;color:#0f172a}
+body.light header{background:rgba(255,255,255,.9)!important;border-bottom:1px solid #e5e7eb!important;box-shadow:0 6px 20px rgba(15,23,42,.06)}
+body.light .card{background:#ffffff !important;border:1px solid #cbd5e1 !important;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+body.light .chip{border-color:#cbd5e1;background:#fff}
+body.light input,body.light select,body.light textarea{background:#f8fafc;color:#0f172a;border-color:#cbd5e1}
+body.light button{border-color:#cbd5e1}
+body.light #wheel{border-color:#cbd5e1}
+body.light .text-slate-400,body.light .text-slate-300\/90{color:#334155 !important}
