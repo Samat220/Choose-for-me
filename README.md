@@ -59,15 +59,6 @@ python app.py
 
 http://127.0.0.1:9000
 
-## 📁 Project Structure
-.
-├── app.py               # FastAPI backend
-├── templates/
-│   └── index.html       # Main UI
-├── static/
-│   ├── app.js           # Frontend logic (tabs, cards, spin wheel, theme)
-│   └── styles.css       # Styling, dark/light themes
-└── README.md
 
 ## 📝 Usage
 
