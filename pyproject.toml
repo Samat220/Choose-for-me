@@ -1,0 +1,160 @@
+[project]
+name = "media-picker"
+version = "1.0.0"
+description = "A modern web app for organizing games and movies with a spinning wheel picker"
+authors = [{name = "Your Name", email = "your.email@example.com"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "jinja2>=3.1.2",
+    "python-multipart>=0.0.6",
+    "pydantic>=2.5.0",
+    "sqlalchemy>=2.0.23",
+    "aiosqlite>=0.19.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.25.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+media-picker = "app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+exclude = [
+    "/.git",
+    "/.venv",
+    "/tests",
+    "*.db",
+    "__pycache__",
+]
+
+[tool.ruff]
+fix = true
+line-length = 100
+target-version = "py310"
+exclude = [".venv", ".git", "build", "__pycache__"]
+
+[tool.ruff.lint]
+preview = true
+select = [
+    "ARG", # https://beta.ruff.rs/docs/rules/#flake8-unused-arguments-arg
+    "B", # https://pypi.org/project/flake8-bugbear/
+    "BLE", # https://pypi.org/project/flake8-blind-except/
+    "C4", # https://github.com/adamchainz/flake8-comprehensions
+    "C90", # https://pypi.org/project/mccabe/
+    "E", # https://pycodestyle.pycqa.org/en/latest/intro.html#error-codes
+    "ERA", # https://pypi.org/project/flake8-eradicate/
+    "EXE", # https://pypi.org/project/flake8-executable/
+    "F", # https://flake8.pycqa.org/en/latest/user/error-codes.html
+    "I", # https://pycqa.github.io/isort/
+    "ICN", # https://pypi.org/project/flake8-import-conventions/
+    "ISC", # https://github.com/flake8-implicit-str-concat/flake8-implicit-str-concat
+    "LOG", # https://github.com/adamchainz/flake8-logging
+    "N", # https://github.com/PyCQA/pep8-naming
+    "PERF", # https://pypi.org/project/perflint/
+    "PGH", # https://github.com/pre-commit/pygrep-hooks
+    "PIE", # https://pypi.org/project/flake8-pie/
+    "PLC", # https://beta.ruff.rs/docs/rules/#convention-plc
+    "PT", # https://github.com/m-burst/flake8-pytest-style
+    "PTH", # https://pypi.org/project/flake8-use-pathlib/
+    "RET", # https://pypi.org/project/flake8-return/
+    "RUF", # https://beta.ruff.rs/docs/rules/#ruff-specific-rules-ruf
+    "SIM", # https://pypi.org/project/flake8-simplify/
+    "TRY", # https://pypi.org/project/tryceratops/
+    "W", # https://pycodestyle.pycqa.org/en/latest/intro.html#error-codes
+]
+ignore = [
+    "E203", # whitespace before ',', ';', or ':'
+    "PLC0415", # import-outside-top-level
+    "RUF012", # mutable-class-default
+    "TRY003", # raise-vanilla-args
+    # Ignored for now - TODO add back in and cleanup
+    "C901", # Code complexity
+    "ERA001", # Commented out code
+    "PGH003", # Use specific rule codes when ignoring type issues
+    "PGH004", # Use specific rule codes when using `noqa`
+    "RET504", # Unnecessary assignment before return
+    # Ignored because we use ruff format
+    "COM812",
+    "COM819",
+    "D206",
+    "D300",
+    "E111",
+    "E114",
+    "E117",
+    "ISC001",
+    "ISC002",
+    "Q000",
+    "Q001",
+    "Q002",
+    "Q003",
+    "W191",
+]
+extend-select = ["I"]
+dummy-variable-rgx = "^_[a-zA-Z0-9k]*$"
+
+[tool.ruff.lint.pep8-naming]
+ignore-names = ["MediaItem"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-sort-within-sections = false
+known-first-party = ["app", "database", "models"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "tests/*",
+    ".venv/*",
+    "venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
