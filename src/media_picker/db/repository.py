@@ -55,7 +55,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(and_(MediaItem.id == id, not MediaItem.is_deleted))
+                .filter(and_(MediaItem.id == id, MediaItem.is_deleted == False))
                 .first()
             )
         except Exception as e:
@@ -67,7 +67,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(not MediaItem.is_deleted)
+                .filter(MediaItem.is_deleted == False)
                 .order_by(desc(MediaItem.added_at))
                 .all()
             )
@@ -78,7 +78,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
     def get_filtered(self, filter_params: MediaItemFilter) -> List[MediaItem]:
         """Get filtered media items."""
         try:
-            query = self.db.query(MediaItem).filter(not MediaItem.is_deleted)
+            query = self.db.query(MediaItem).filter(MediaItem.is_deleted == False)
 
             # Filter by type
             if filter_params.type:
@@ -196,7 +196,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(and_(MediaItem.status == status, not MediaItem.is_deleted))
+                .filter(and_(MediaItem.status == status, MediaItem.is_deleted == False))
                 .order_by(desc(MediaItem.added_at))
                 .all()
             )
@@ -209,7 +209,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(and_(MediaItem.type == type, not MediaItem.is_deleted))
+                .filter(and_(MediaItem.type == type, MediaItem.is_deleted == False))
                 .order_by(desc(MediaItem.added_at))
                 .all()
             )
@@ -220,7 +220,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
     def count_total(self) -> int:
         """Count total non-deleted items."""
         try:
-            return self.db.query(MediaItem).filter(not MediaItem.is_deleted).count()
+            return self.db.query(MediaItem).filter(MediaItem.is_deleted == False).count()
         except Exception as e:
             logger.error(f"Error counting items: {e}")
             raise DatabaseError(f"Failed to count items: {e}") from e
@@ -230,7 +230,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(and_(MediaItem.status == status, not MediaItem.is_deleted))
+                .filter(and_(MediaItem.status == status, MediaItem.is_deleted == False))
                 .count()
             )
         except Exception as e:
