@@ -16,7 +16,6 @@ dependencies = [
     "sqlalchemy>=2.0.23",
     "aiosqlite>=0.19.0",
     "httpx>=0.28.1",
-    "ruff>=0.12.12",
 ]
 
 [project.optional-dependencies]
@@ -217,8 +216,3 @@ module = [
     "jinja2.*",
 ]
 ignore_missing_imports = true
-
-[dependency-groups]
-dev = [
-    "ruff>=0.12.12",
-]
