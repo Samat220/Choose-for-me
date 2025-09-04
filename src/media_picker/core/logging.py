@@ -2,7 +2,6 @@
 
 import logging
 import sys
-from typing import Any
 
 
 def setup_logging(log_level: str = "INFO", debug: bool = False) -> logging.Logger:
@@ -27,9 +26,7 @@ def setup_logging(log_level: str = "INFO", debug: bool = False) -> logging.Logge
         )
     else:
         # Production logging format
-        formatter = logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
     # Update handler formatter
     for handler in logging.getLogger().handlers:

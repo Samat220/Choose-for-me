@@ -21,16 +21,19 @@ engine_kwargs = {
 
 # SQLite-specific optimizations
 if settings.database_url.startswith("sqlite"):
-    engine_kwargs.update({
-        "connect_args": {
-            "check_same_thread": False,
-            "timeout": 30,
-        },
-        "poolclass": StaticPool,
-        "pool_pre_ping": True,
-    })
+    engine_kwargs.update(
+        {
+            "connect_args": {
+                "check_same_thread": False,
+                "timeout": 30,
+            },
+            "poolclass": StaticPool,
+            "pool_pre_ping": True,
+        }
+    )
 
 engine = create_engine(settings.database_url, **engine_kwargs)
+
 
 # Configure SQLite for better performance and reliability
 @event.listens_for(Engine, "connect")
@@ -49,6 +52,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
         # Optimize temp store
         cursor.execute("PRAGMA temp_store=MEMORY")
         cursor.close()
+
 
 # Create session factory
 SessionLocal = sessionmaker(

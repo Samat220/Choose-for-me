@@ -23,81 +23,59 @@ class MediaItem(Base):
     __tablename__ = "media_items"
 
     # Primary fields
-    id: Mapped[str] = mapped_column(
-        String(32), 
-        primary_key=True, 
-        default=generate_id,
-        index=True
-    )
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=generate_id, index=True)
     type: Mapped[str] = mapped_column(
-        String(10), 
-        nullable=False, 
-        index=True,
-        comment="Type of media: game or movie"
+        String(10), nullable=False, index=True, comment="Type of media: game or movie"
     )
     title: Mapped[str] = mapped_column(
-        String(200), 
-        nullable=False, 
-        index=True,
-        comment="Title of the media item"
+        String(200), nullable=False, index=True, comment="Title of the media item"
     )
     platform: Mapped[Optional[str]] = mapped_column(
-        String(50), 
-        nullable=True, 
-        index=True,
-        comment="Platform where media is available"
+        String(50), nullable=True, index=True, comment="Platform where media is available"
     )
     cover_url: Mapped[Optional[str]] = mapped_column(
-        Text, 
-        nullable=True,
-        comment="URL to cover image"
+        Text, nullable=True, comment="URL to cover image"
     )
-    
+
     # JSON field for tags (better than comma-separated string)
     tags_json: Mapped[Optional[str]] = mapped_column(
-        JSON, 
-        nullable=True,
-        comment="JSON array of tags"
+        JSON, nullable=True, comment="JSON array of tags"
     )
-    
+
     # Status and metadata
     status: Mapped[str] = mapped_column(
-        String(20), 
-        nullable=False, 
-        default="active", 
+        String(20),
+        nullable=False,
+        default="active",
         index=True,
-        comment="Status: active, done, or archived"
+        comment="Status: active, done, or archived",
     )
     added_at: Mapped[int] = mapped_column(
-        Integer, 
-        nullable=False, 
+        Integer,
+        nullable=False,
         default=lambda: int(time.time()),
         index=True,
-        comment="Unix timestamp when item was added"
+        comment="Unix timestamp when item was added",
     )
-    
+
     # Audit fields
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
-        comment="Creation timestamp"
+        comment="Creation timestamp",
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
         onupdate=func.now(),
-        comment="Last update timestamp"
+        comment="Last update timestamp",
     )
-    
+
     # Soft delete support
     is_deleted: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        default=False,
-        index=True,
-        comment="Soft delete flag"
+        Boolean, nullable=False, default=False, index=True, comment="Soft delete flag"
     )
 
     def __repr__(self) -> str:
@@ -111,10 +89,9 @@ class MediaItem(Base):
             try:
                 if isinstance(self.tags_json, list):
                     return self.tags_json
-                elif isinstance(self.tags_json, str):
+                if isinstance(self.tags_json, str):
                     return json.loads(self.tags_json)
-                else:
-                    return []
+                return []
             except (json.JSONDecodeError, TypeError):
                 return []
         return []
@@ -128,7 +105,7 @@ class MediaItem(Base):
             for tag in value:
                 if isinstance(tag, str) and tag.strip():
                     clean_tags.append(tag.strip().lower())
-            
+
             # Remove duplicates while preserving order
             seen = set()
             unique_tags = []
@@ -136,7 +113,7 @@ class MediaItem(Base):
                 if tag not in seen:
                     seen.add(tag)
                     unique_tags.append(tag)
-            
+
             self.tags_json = unique_tags
         else:
             self.tags_json = []
@@ -163,15 +140,15 @@ class MediaItem(Base):
             "coverUrl": "cover_url",
             "addedAt": "added_at",
         }
-        
+
         for key, value in data.items():
             # Skip None values and computed fields
             if value is None or key in ("id", "created_at", "updated_at"):
                 continue
-                
+
             # Map field name
             field_name = field_mapping.get(key, key)
-            
+
             # Special handling for tags
             if key == "tags" and hasattr(self, "tags"):
                 self.tags = value
@@ -186,10 +163,10 @@ class MediaItem(Base):
             "coverUrl": "cover_url",
             "addedAt": "added_at",
         }
-        
+
         mapped_data = {}
         tags_value = None
-        
+
         for key, value in data.items():
             if key == "tags":
                 tags_value = value
@@ -197,12 +174,12 @@ class MediaItem(Base):
                 mapped_data[field_mapping[key]] = value
             elif key not in ("id", "created_at", "updated_at"):
                 mapped_data[key] = value
-        
+
         # Create instance
         instance = cls(**mapped_data)
-        
+
         # Set tags separately
         if tags_value is not None:
             instance.tags = tags_value
-            
+
         return instance

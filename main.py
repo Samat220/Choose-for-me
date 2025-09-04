@@ -36,16 +36,16 @@ async def lifespan(_app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         raise
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down Media Picker application")
 
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
-    
+
     app = FastAPI(
         title=settings.app_name,
         description="A modern web app for organizing games and movies with a spinning wheel picker",
@@ -85,7 +85,7 @@ def create_app() -> FastAPI:
         """Serve the main application page."""
         if templates:
             return templates.TemplateResponse("index.html", {"request": request})
-        
+
         # Simple fallback
         return HTMLResponse("""
         <!DOCTYPE html>
@@ -121,7 +121,7 @@ app = create_app()
 def main():
     """Entry point for running the application."""
     import uvicorn
-    
+
     logger.info(f"Starting server on {settings.host}:{settings.port}")
     uvicorn.run(
         "main:app",

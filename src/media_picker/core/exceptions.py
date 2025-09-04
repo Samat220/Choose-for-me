@@ -15,13 +15,9 @@ class MediaPickerError(Exception):
 class ValidationError(MediaPickerError):
     """Raised when data validation fails."""
 
-    pass
-
 
 class DatabaseError(MediaPickerError):
     """Raised when database operations fail."""
-
-    pass
 
 
 class ItemNotFoundError(MediaPickerError):
@@ -35,10 +31,6 @@ class ItemNotFoundError(MediaPickerError):
 class ConfigurationError(MediaPickerError):
     """Raised when configuration is invalid."""
 
-    pass
-
 
 class ServiceError(MediaPickerError):
     """Raised when a service operation fails."""
-
-    pass

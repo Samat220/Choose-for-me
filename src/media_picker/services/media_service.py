@@ -27,7 +27,9 @@ class MediaItemService:
         self.db = db
         self.repository = MediaItemRepository(db)
 
-    def get_all_items(self, filter_params: Optional[MediaItemFilter] = None) -> List[MediaItemResponse]:
+    def get_all_items(
+        self, filter_params: Optional[MediaItemFilter] = None
+    ) -> List[MediaItemResponse]:
         """Get all media items with optional filtering."""
         try:
             if filter_params:
@@ -58,13 +60,13 @@ class MediaItemService:
         try:
             # Validate the data (Pydantic already does basic validation)
             self._validate_create_data(item_data)
-            
+
             # Convert to dict for repository
             data = item_data.model_dump(by_alias=True)
-            
+
             # Create the item
             item = self.repository.create(data)
-            
+
             logger.info(f"Created new media item: {item.id} - {item.title}")
             return self._item_to_response(item)
         except ValidationError:
@@ -78,16 +80,16 @@ class MediaItemService:
         try:
             # Validate the update data
             self._validate_update_data(update_data)
-            
+
             # Get only non-None fields for partial update
             data = update_data.model_dump(by_alias=True, exclude_none=True)
-            
+
             if not data:
                 raise ValidationError("No valid fields provided for update")
-            
+
             # Update the item
             item = self.repository.update(item_id, data)
-            
+
             logger.info(f"Updated media item: {item.id} - {item.title}")
             return self._item_to_response(item)
         except (ItemNotFoundError, ValidationError):
@@ -119,13 +121,13 @@ class MediaItemService:
                 include_archived=spin_request.include_archived,
                 status=spin_request.status,
             )
-            
+
             # Get filtered items
             items = self.repository.get_filtered(filter_params)
-            
+
             # Convert to response objects
             pool = [self._item_to_response(item) for item in items]
-            
+
             # Select random winner
             winner = None
             if pool:
@@ -133,12 +135,8 @@ class MediaItemService:
                 logger.info(f"Spin wheel selected: {winner.id} - {winner.title}")
             else:
                 logger.info("Spin wheel found no items in pool")
-            
-            return SpinResponse(
-                winner=winner,
-                pool=pool,
-                total_pool_size=len(pool)
-            )
+
+            return SpinResponse(winner=winner, pool=pool, total_pool_size=len(pool))
         except Exception as e:
             logger.error(f"Error spinning wheel: {e}")
             raise ServiceError(f"Failed to spin wheel: {e}") from e
@@ -178,9 +176,7 @@ class MediaItemService:
         """Validate data for creating a new item."""
         # Additional business logic validation can go here
         # For example, checking if title already exists
-        pass
 
     def _validate_update_data(self, data: MediaItemUpdate) -> None:
         """Validate data for updating an item."""
         # Additional business logic validation can go here
-        pass

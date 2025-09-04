@@ -1,7 +1,5 @@
 """Dependency injection for API endpoints."""
 
-from typing import Generator
-
 from fastapi import Depends
 from sqlalchemy.orm import Session
 

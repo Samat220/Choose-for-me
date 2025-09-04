@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 
 from ..core.exceptions import DatabaseError, ItemNotFoundError
@@ -26,27 +26,22 @@ class BaseRepository(ABC, Generic[T]):
     @abstractmethod
     def get_by_id(self, id: str) -> Optional[T]:
         """Get item by ID."""
-        pass
 
     @abstractmethod
     def get_all(self) -> List[T]:
         """Get all items."""
-        pass
 
     @abstractmethod
     def create(self, data: Dict[str, Any]) -> T:
         """Create new item."""
-        pass
 
     @abstractmethod
     def update(self, id: str, data: Dict[str, Any]) -> T:
         """Update existing item."""
-        pass
 
     @abstractmethod
     def delete(self, id: str) -> bool:
         """Delete item."""
-        pass
 
 
 class MediaItemRepository(BaseRepository[MediaItem]):
@@ -60,7 +55,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(and_(MediaItem.id == id, MediaItem.is_deleted == False))
+                .filter(and_(MediaItem.id == id, not MediaItem.is_deleted))
                 .first()
             )
         except Exception as e:
@@ -72,7 +67,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(MediaItem.is_deleted == False)
+                .filter(not MediaItem.is_deleted)
                 .order_by(desc(MediaItem.added_at))
                 .all()
             )
@@ -83,7 +78,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
     def get_filtered(self, filter_params: MediaItemFilter) -> List[MediaItem]:
         """Get filtered media items."""
         try:
-            query = self.db.query(MediaItem).filter(MediaItem.is_deleted == False)
+            query = self.db.query(MediaItem).filter(not MediaItem.is_deleted)
 
             # Filter by type
             if filter_params.type:
@@ -201,7 +196,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(and_(MediaItem.status == status, MediaItem.is_deleted == False))
+                .filter(and_(MediaItem.status == status, not MediaItem.is_deleted))
                 .order_by(desc(MediaItem.added_at))
                 .all()
             )
@@ -214,7 +209,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(and_(MediaItem.type == type, MediaItem.is_deleted == False))
+                .filter(and_(MediaItem.type == type, not MediaItem.is_deleted))
                 .order_by(desc(MediaItem.added_at))
                 .all()
             )
@@ -225,7 +220,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
     def count_total(self) -> int:
         """Count total non-deleted items."""
         try:
-            return self.db.query(MediaItem).filter(MediaItem.is_deleted == False).count()
+            return self.db.query(MediaItem).filter(not MediaItem.is_deleted).count()
         except Exception as e:
             logger.error(f"Error counting items: {e}")
             raise DatabaseError(f"Failed to count items: {e}") from e
@@ -235,7 +230,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(and_(MediaItem.status == status, MediaItem.is_deleted == False))
+                .filter(and_(MediaItem.status == status, not MediaItem.is_deleted))
                 .count()
             )
         except Exception as e:

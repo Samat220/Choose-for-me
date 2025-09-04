@@ -4,7 +4,6 @@ from typing import Any, Dict, Type, TypeVar
 
 from pydantic import BaseModel, ConfigDict
 
-
 T = TypeVar("T", bound="BaseSchema")
 
 

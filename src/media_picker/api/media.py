@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from ..core.exceptions import ItemNotFoundError, ServiceError, ValidationError
+from ..core.exceptions import ItemNotFoundError, ValidationError
 from ..core.logging import get_logger
 from ..schemas.media import (
     MediaItemCreate,
@@ -27,11 +27,11 @@ async def get_items(
     type: Optional[str] = Query(None, regex="^(game|movie)$", description="Filter by media type"),
     tags: Optional[str] = Query(None, description="Comma-separated tags to filter by"),
     include_archived: bool = Query(False, description="Include archived items"),
-    includeArchived: Optional[bool] = Query(None, description="Include archived items (legacy parameter)"),
+    includeArchived: Optional[bool] = Query(
+        None, description="Include archived items (legacy parameter)"
+    ),
     status: Optional[str] = Query(
-        None, 
-        regex="^(active|done|archived)$", 
-        description="Filter by status"
+        None, regex="^(active|done|archived)$", description="Filter by status"
     ),
     search: Optional[str] = Query(None, min_length=1, description="Search in titles"),
     limit: Optional[int] = Query(None, ge=1, le=1000, description="Limit results"),
@@ -42,7 +42,7 @@ async def get_items(
     try:
         # Support both parameter names for backward compatibility
         include_arch = includeArchived if includeArchived is not None else include_archived
-        
+
         filter_params = MediaItemFilter(
             type=type,
             tags=tags,
@@ -52,7 +52,7 @@ async def get_items(
             limit=limit,
             offset=offset,
         )
-        
+
         items = service.get_all_items(filter_params)
         logger.info(f"Retrieved {len(items)} media items")
         return items
@@ -155,9 +155,7 @@ async def spin_wheel(
     tags: Optional[str] = Query(None, description="Comma-separated tags to filter by"),
     include_archived: bool = Query(False, description="Include archived items"),
     status: Optional[str] = Query(
-        None, 
-        regex="^(active|done|archived)$", 
-        description="Filter by status"
+        None, regex="^(active|done|archived)$", description="Filter by status"
     ),
     service: MediaItemService = Depends(get_media_service),
 ) -> SpinResponse:
@@ -169,7 +167,7 @@ async def spin_wheel(
             include_archived=include_archived,
             status=status,
         )
-        
+
         result = service.spin_wheel(spin_request)
         logger.info(f"Spin wheel completed with {result.total_pool_size} items in pool")
         return result

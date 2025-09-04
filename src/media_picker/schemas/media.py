@@ -2,7 +2,7 @@
 
 import re
 from datetime import datetime
-from typing import Any, List, Literal, Optional
+from typing import List, Literal, Optional
 
 from pydantic import Field, field_validator, model_validator
 
@@ -28,28 +28,40 @@ class MediaStatus(str):
 # Platform mappings for validation
 PLATFORM_MAPPINGS = {
     MediaType.GAME: {
-        "PC", "PlayStation", "PlayStation 4", "PlayStation 5", 
-        "Xbox", "Xbox One", "Xbox Series X/S", "Nintendo Switch", 
-        "Nintendo 3DS", "Steam", "Epic Games", "GOG"
+        "PC",
+        "PlayStation",
+        "PlayStation 4",
+        "PlayStation 5",
+        "Xbox",
+        "Xbox One",
+        "Xbox Series X/S",
+        "Nintendo Switch",
+        "Nintendo 3DS",
+        "Steam",
+        "Epic Games",
+        "GOG",
     },
     MediaType.MOVIE: {
-        "Netflix", "Amazon Prime", "Disney+", "Apple TV+", 
-        "HBO Max", "Hulu", "Crunchyroll", "Ororo.tv", "Cinema", 
-        "Blu-ray", "DVD"
-    }
+        "Netflix",
+        "Amazon Prime",
+        "Disney+",
+        "Apple TV+",
+        "HBO Max",
+        "Hulu",
+        "Crunchyroll",
+        "Ororo.tv",
+        "Cinema",
+        "Blu-ray",
+        "DVD",
+    },
 }
 
 
 class TagSchema(BaseSchema):
     """Individual tag schema."""
-    
-    name: str = Field(
-        ..., 
-        min_length=1, 
-        max_length=settings.max_tag_length,
-        description="Tag name"
-    )
-    
+
+    name: str = Field(..., min_length=1, max_length=settings.max_tag_length, description="Tag name")
+
     @field_validator("name")
     @classmethod
     def validate_tag_name(cls, value: str) -> str:
@@ -64,31 +76,22 @@ class TagSchema(BaseSchema):
 
 class MediaItemBase(BaseSchema):
     """Base media item schema with common fields."""
-    
-    type: Literal["game", "movie"] = Field(
-        ..., 
-        description="Type of media item"
-    )
+
+    type: Literal["game", "movie"] = Field(..., description="Type of media item")
     title: str = Field(
-        ..., 
-        min_length=1, 
+        ...,
+        min_length=1,
         max_length=settings.max_title_length,
-        description="Title of the media item"
+        description="Title of the media item",
     )
     platform: Optional[str] = Field(
-        None, 
+        None,
         max_length=settings.max_platform_length,
-        description="Platform where the media is available"
+        description="Platform where the media is available",
     )
-    cover_url: Optional[str] = Field(
-        None, 
-        alias="coverUrl",
-        description="URL to cover image"
-    )
+    cover_url: Optional[str] = Field(None, alias="coverUrl", description="URL to cover image")
     tags: List[str] = Field(
-        default_factory=list, 
-        description="List of tags",
-        max_length=settings.max_tags_per_item
+        default_factory=list, description="List of tags", max_length=settings.max_tags_per_item
     )
 
     @field_validator("title")
@@ -154,7 +157,7 @@ class MediaItemBase(BaseSchema):
                 unique_tags.append(tag)
 
         # Limit number of tags
-        return unique_tags[:settings.max_tags_per_item]
+        return unique_tags[: settings.max_tags_per_item]
 
     @model_validator(mode="after")
     def validate_platform_for_type(self) -> "MediaItemBase":
@@ -164,7 +167,7 @@ class MediaItemBase(BaseSchema):
             if valid_platforms and self.platform not in valid_platforms:
                 raise ValueError(
                     f'Invalid platform "{self.platform}" for type "{self.type}". '
-                    f'Valid platforms: {", ".join(sorted(valid_platforms))}'
+                    f"Valid platforms: {', '.join(sorted(valid_platforms))}"
                 )
         return self
 
@@ -173,26 +176,28 @@ class MediaItemCreate(MediaItemBase):
     """Schema for creating a new media item."""
 
     model_config = BaseSchema.model_config.copy()
-    model_config.update({
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "type": "game",
-                    "title": "The Witcher 3: Wild Hunt",
-                    "platform": "PC",
-                    "coverUrl": "https://example.com/witcher3.jpg",
-                    "tags": ["rpg", "open-world", "fantasy"]
-                },
-                {
-                    "type": "movie",
-                    "title": "Inception",
-                    "platform": "Netflix",
-                    "coverUrl": "https://example.com/inception.jpg",
-                    "tags": ["sci-fi", "thriller", "christopher-nolan"]
-                }
-            ]
+    model_config.update(
+        {
+            "json_schema_extra": {
+                "examples": [
+                    {
+                        "type": "game",
+                        "title": "The Witcher 3: Wild Hunt",
+                        "platform": "PC",
+                        "coverUrl": "https://example.com/witcher3.jpg",
+                        "tags": ["rpg", "open-world", "fantasy"],
+                    },
+                    {
+                        "type": "movie",
+                        "title": "Inception",
+                        "platform": "Netflix",
+                        "coverUrl": "https://example.com/inception.jpg",
+                        "tags": ["sci-fi", "thriller", "christopher-nolan"],
+                    },
+                ]
+            }
         }
-    })
+    )
 
 
 class MediaItemUpdate(BaseSchema):
@@ -200,29 +205,22 @@ class MediaItemUpdate(BaseSchema):
 
     type: Optional[Literal["game", "movie"]] = Field(None, description="Type of media item")
     title: Optional[str] = Field(
-        None, 
-        min_length=1, 
+        None,
+        min_length=1,
         max_length=settings.max_title_length,
-        description="Title of the media item"
+        description="Title of the media item",
     )
     platform: Optional[str] = Field(
-        None, 
+        None,
         max_length=settings.max_platform_length,
-        description="Platform where the media is available"
+        description="Platform where the media is available",
     )
-    cover_url: Optional[str] = Field(
-        None, 
-        alias="coverUrl",
-        description="URL to cover image"
-    )
+    cover_url: Optional[str] = Field(None, alias="coverUrl", description="URL to cover image")
     tags: Optional[List[str]] = Field(
-        None, 
-        description="List of tags",
-        max_length=settings.max_tags_per_item
+        None, description="List of tags", max_length=settings.max_tags_per_item
     )
     status: Optional[Literal["active", "done", "archived"]] = Field(
-        None, 
-        description="Status of the media item"
+        None, description="Status of the media item"
     )
 
     @field_validator("title")
@@ -272,7 +270,7 @@ class MediaItemUpdate(BaseSchema):
         """Validate and clean tags."""
         if value is None:
             return None
-        
+
         if not value:
             return []
 
@@ -292,7 +290,7 @@ class MediaItemUpdate(BaseSchema):
                 seen.add(tag)
                 unique_tags.append(tag)
 
-        return unique_tags[:settings.max_tags_per_item]
+        return unique_tags[: settings.max_tags_per_item]
 
 
 class MediaItemResponse(BaseSchema):
@@ -310,25 +308,27 @@ class MediaItemResponse(BaseSchema):
     updated_at: Optional[datetime] = Field(None, description="Last update timestamp")
 
     model_config = BaseSchema.model_config.copy()
-    model_config.update({
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": "abc123def456",
-                    "type": "game",
-                    "title": "The Witcher 3: Wild Hunt",
-                    "platform": "PC",
-                    "coverUrl": "https://example.com/witcher3.jpg",
-                    "tags": ["rpg", "open-world", "fantasy"],
-                    "status": "active",
-                    "addedAt": 1640995200,
-                    "created_at": "2022-01-01T00:00:00Z",
-                    "updated_at": "2022-01-01T00:00:00Z"
-                }
-            ]
+    model_config.update(
+        {
+            "from_attributes": True,
+            "json_schema_extra": {
+                "examples": [
+                    {
+                        "id": "abc123def456",
+                        "type": "game",
+                        "title": "The Witcher 3: Wild Hunt",
+                        "platform": "PC",
+                        "coverUrl": "https://example.com/witcher3.jpg",
+                        "tags": ["rpg", "open-world", "fantasy"],
+                        "status": "active",
+                        "addedAt": 1640995200,
+                        "created_at": "2022-01-01T00:00:00Z",
+                        "updated_at": "2022-01-01T00:00:00Z",
+                    }
+                ]
+            },
         }
-    })
+    )
 
 
 class SpinRequest(BaseSchema):
@@ -338,8 +338,7 @@ class SpinRequest(BaseSchema):
     tags: Optional[str] = Field(None, description="Comma-separated tags to filter by")
     include_archived: bool = Field(False, description="Include archived items")
     status: Optional[Literal["active", "done", "archived"]] = Field(
-        None, 
-        description="Filter by status"
+        None, description="Filter by status"
     )
 
 
@@ -348,31 +347,32 @@ class SpinResponse(BaseSchema):
 
     winner: Optional[MediaItemResponse] = Field(None, description="Selected item")
     pool: List[MediaItemResponse] = Field(
-        default_factory=list, 
-        description="Pool of items that were considered"
+        default_factory=list, description="Pool of items that were considered"
     )
     total_pool_size: int = Field(0, description="Total number of items in the pool")
 
     model_config = BaseSchema.model_config.copy()
-    model_config.update({
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "winner": {
-                        "id": "abc123",
-                        "type": "game",
-                        "title": "The Witcher 3",
-                        "platform": "PC",
-                        "tags": ["rpg"],
-                        "status": "active",
-                        "addedAt": 1640995200
-                    },
-                    "pool": [],
-                    "total_pool_size": 10
-                }
-            ]
+    model_config.update(
+        {
+            "json_schema_extra": {
+                "examples": [
+                    {
+                        "winner": {
+                            "id": "abc123",
+                            "type": "game",
+                            "title": "The Witcher 3",
+                            "platform": "PC",
+                            "tags": ["rpg"],
+                            "status": "active",
+                            "addedAt": 1640995200,
+                        },
+                        "pool": [],
+                        "total_pool_size": 10,
+                    }
+                ]
+            }
         }
-    })
+    )
 
 
 class MediaItemFilter(BaseSchema):
@@ -382,8 +382,7 @@ class MediaItemFilter(BaseSchema):
     tags: Optional[str] = Field(None, description="Comma-separated tags to filter by")
     include_archived: bool = Field(False, description="Include archived items")
     status: Optional[Literal["active", "done", "archived"]] = Field(
-        None, 
-        description="Filter by status"
+        None, description="Filter by status"
     )
     limit: Optional[int] = Field(None, ge=1, le=1000, description="Limit number of results")
     offset: Optional[int] = Field(None, ge=0, description="Offset for pagination")
