@@ -1,4 +1,4 @@
-﻿"""Core configuration module using Pydantic V2 settings."""
+"""Core configuration module using Pydantic V2 settings."""
 
 import logging
 from functools import lru_cache
