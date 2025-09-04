@@ -27,7 +27,7 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = Field(
-        default="sqlite:///./media_picker.db",
+        default="sqlite:///./data/media_picker.db",
         description="Database connection URL",
     )
 
