@@ -112,7 +112,8 @@ class MediaItemRepository(BaseRepository[MediaItem]):
                 filtered_items = []
                 for item in items:
                     item_tags = [tag.lower() for tag in item.tags]
-                    if any(tag in item_tags for tag in tag_filters):
+                    # Check if ALL requested tags are present in the item
+                    if all(tag in item_tags for tag in tag_filters):
                         filtered_items.append(item)
                 return filtered_items
 
