@@ -1,0 +1,95 @@
+name: Ruff Check CI
+
+on:
+  push:
+    branches: [ main, refactor_application_to_use_pydantic ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint with Ruff
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          
+      - name: Install dependencies
+        run: uv sync
+        
+      - name: Run Ruff linting
+        uses: chartboost/ruff-action@v1
+        with:
+          args: "check --output-format=github"
+          
+      - name: Run Ruff formatting check
+        uses: chartboost/ruff-action@v1
+        with:
+          args: "format --check"
+
+  test:
+    runs-on: ubuntu-latest
+    name: Run Tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          
+      - name: Install dependencies
+        run: uv sync
+        
+      - name: Run tests
+        run: uv run pytest tests/ -v --tb=short
+        
+      - name: Check application startup
+        run: |
+          # Test that the application can start without errors
+          timeout 10s uv run uvicorn main:app --host 127.0.0.1 --port 8000 &
+          sleep 5
+          curl -f http://127.0.0.1:8000/health || exit 1
+          pkill -f uvicorn || true
+
+  type-check:
+    runs-on: ubuntu-latest
+    name: Type Check with mypy
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          
+      - name: Install uv
+        uses: actions/setup-uv@v3
+        with:
+          enable-cache: true
+          
+      - name: Install dependencies
+        run: uv sync
+        
+      - name: Run mypy
+        run: uv run mypy src/ --ignore-missing-imports --no-strict-optional
