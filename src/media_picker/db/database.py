@@ -1,7 +1,7 @@
 """Database configuration and connection management."""
 
 from contextlib import contextmanager
-from typing import Generator
+from typing import Any, Generator
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
@@ -14,7 +14,7 @@ from ..core.logging import get_logger
 logger = get_logger("database")
 
 # Create database engine with optimized settings
-engine_kwargs = {
+engine_kwargs: dict[str, Any] = {
     "echo": settings.debug,  # Log SQL queries in debug mode
     "future": True,  # Use SQLAlchemy 2.0 style
 }

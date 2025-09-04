@@ -38,7 +38,7 @@ class MediaItem(Base):
     )
 
     # JSON field for tags (better than comma-separated string)
-    tags_json: Mapped[Optional[str]] = mapped_column(
+    tags_json: Mapped[Optional[Any]] = mapped_column(
         JSON, nullable=True, comment="JSON array of tags"
     )
 
@@ -88,9 +88,11 @@ class MediaItem(Base):
         if self.tags_json:
             try:
                 if isinstance(self.tags_json, list):
-                    return self.tags_json
+                    return [str(tag) for tag in self.tags_json if isinstance(tag, str)]
                 if isinstance(self.tags_json, str):
-                    return json.loads(self.tags_json)
+                    parsed = json.loads(self.tags_json)
+                    if isinstance(parsed, list):
+                        return [str(tag) for tag in parsed if isinstance(tag, str)]
                 return []
             except (json.JSONDecodeError, TypeError):
                 return []

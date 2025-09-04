@@ -1,6 +1,6 @@
 """API endpoints for media items."""
 
-from typing import List, Optional
+from typing import List, Literal, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -24,14 +24,14 @@ router = APIRouter(prefix="/api", tags=["media"])
 
 @router.get("/items", response_model=List[MediaItemResponse])
 async def get_items(
-    type: Optional[str] = Query(None, regex="^(game|movie)$", description="Filter by media type"),
+    type: Optional[str] = Query(None, pattern="^(game|movie)$", description="Filter by media type"),
     tags: Optional[str] = Query(None, description="Comma-separated tags to filter by"),
     include_archived: bool = Query(False, description="Include archived items"),
     includeArchived: Optional[bool] = Query(
         None, description="Include archived items (legacy parameter)"
     ),
     status: Optional[str] = Query(
-        None, regex="^(active|done|archived)$", description="Filter by status"
+        None, pattern="^(active|done|archived)$", description="Filter by status"
     ),
     search: Optional[str] = Query(None, min_length=1, description="Search in titles"),
     limit: Optional[int] = Query(None, ge=1, le=1000, description="Limit results"),
@@ -44,10 +44,10 @@ async def get_items(
         include_arch = includeArchived if includeArchived is not None else include_archived
 
         filter_params = MediaItemFilter(
-            type=type,
+            type=cast(Optional[Literal["game", "movie"]], type),
             tags=tags,
             include_archived=include_arch,
-            status=status,
+            status=cast(Optional[Literal["active", "done", "archived"]], status),
             search=search,
             limit=limit,
             offset=offset,
@@ -151,21 +151,21 @@ async def delete_item(
 
 @router.get("/spin", response_model=SpinResponse)
 async def spin_wheel(
-    type: Optional[str] = Query(None, regex="^(game|movie)$", description="Filter by media type"),
+    type: Optional[str] = Query(None, pattern="^(game|movie)$", description="Filter by media type"),
     tags: Optional[str] = Query(None, description="Comma-separated tags to filter by"),
     include_archived: bool = Query(False, description="Include archived items"),
     status: Optional[str] = Query(
-        None, regex="^(active|done|archived)$", description="Filter by status"
+        None, pattern="^(active|done|archived)$", description="Filter by status"
     ),
     service: MediaItemService = Depends(get_media_service),
 ) -> SpinResponse:
     """Spin the wheel to get a random item."""
     try:
         spin_request = SpinRequest(
-            type=type,
+            type=cast(Optional[Literal["game", "movie"]], type),
             tags=tags,
             include_archived=include_archived,
-            status=status,
+            status=cast(Optional[Literal["active", "done", "archived"]], status),
         )
 
         result = service.spin_wheel(spin_request)

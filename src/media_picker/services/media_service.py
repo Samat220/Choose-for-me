@@ -120,6 +120,9 @@ class MediaItemService:
                 tags=spin_request.tags,
                 include_archived=spin_request.include_archived,
                 status=spin_request.status,
+                limit=None,
+                offset=None,
+                search=None,
             )
 
             # Get filtered items

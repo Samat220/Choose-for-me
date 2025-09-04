@@ -1,4 +1,4 @@
-"""Core configuration module using Pydantic V2 settings."""
+﻿"""Core configuration module using Pydantic V2 settings."""
 
 import logging
 from functools import lru_cache
@@ -10,7 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings using Pydantic V2."""
+    """Application settings with environment variable support."""
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -19,33 +19,37 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Application
+    # Core Application Settings
     app_name: str = Field(default="Media Picker", description="Application name")
     version: str = Field(default="1.0.0", description="Application version")
     debug: bool = Field(default=False, description="Debug mode")
     log_level: str = Field(default="INFO", description="Logging level")
 
-    # Database
+    # Server Configuration
+    host: str = Field(default="127.0.0.1", description="Server host")
+    port: int = Field(default=8000, description="Server port", gt=0, le=65535)
+    reload: bool = Field(default=False, description="Auto-reload on changes")
+    workers: int = Field(default=1, description="Number of worker processes", gt=0, le=8)
+
+    # Database Configuration
     database_url: str = Field(
         default="sqlite:///./data/media_picker.db",
         description="Database connection URL",
     )
 
-    # Security
+    # Security Settings
     secret_key: str = Field(
-        default="your-secret-key-here",
-        description="Secret key for security",
+        default="dev-secret-key-please-change-in-production",
+        description="Secret key for sessions and JWT",
+        min_length=32,
     )
     allowed_origins: list[str] = Field(
-        default=["http://localhost:9000", "http://127.0.0.1:9000"],
-        description="Allowed CORS origins",
+        default=["http://localhost:3000", "http://127.0.0.1:8000"],
+        description="CORS allowed origins",
     )
 
-    # Server
-    host: str = Field(default="127.0.0.1", description="Server host")
-    port: int = Field(default=9000, description="Server port", gt=0, le=65535)
-
-    # Paths
+    # Path Configuration
+    data_dir: Path = Field(default=Path("data"), description="Data directory")
     static_dir: Path = Field(default=Path("static"), description="Static files directory")
     templates_dir: Path = Field(default=Path("templates"), description="Templates directory")
 
@@ -61,7 +65,9 @@ class Settings(BaseSettings):
         """Parse allowed origins from string or list."""
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
-        return value
+        if isinstance(value, list):
+            return value
+        return []
 
     @field_validator("log_level")
     @classmethod
@@ -82,7 +88,7 @@ class Settings(BaseSettings):
         )
 
 
-@lru_cache
+@lru_cache()
 def get_settings() -> Settings:
     """Get cached application settings."""
     return Settings()
