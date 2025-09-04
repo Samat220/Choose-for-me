@@ -4,10 +4,15 @@ This script helps migrate data if you have any existing data in the old format.
 """
 
 import json
+import sys
 import time
 import uuid
+from pathlib import Path
 
-from database import MediaItem, SessionLocal, create_tables
+# Add parent directory to path so we can import from legacy
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from legacy.database import MediaItem, SessionLocal, create_tables
 
 
 def migrate_from_json_file(json_file_path: str):

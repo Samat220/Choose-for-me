@@ -30,68 +30,62 @@ Built with **FastAPI** + **SQLite** + **Tailwind CSS**.
 
 ---
 
-## 📦 Requirements
-
-- Python 3.10+  
-- Dependencies listed in `requirements.txt`
-
----
-
 ## 🚀 Getting Started
 
-### Option 1: Using pip
-
-Clone the repository and install dependencies:
+### Installation
 
 ```bash
 git clone <repository-url>
 cd Choose-for-me
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate   # macOS/Linux
-# OR .venv\Scripts\activate on Windows
+# Install uv if you haven't already
+pip install uv
 
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies and create virtual environment
+uv sync
+
+# Activate the virtual environment
+# On Windows
+.venv\Scripts\activate
+# On macOS/Linux  
+source .venv/bin/activate
 ```
 
-### Option 2: Using pip-tools (recommended for development)
+### Initialize and Run
 
 ```bash
-# Install pip-tools
-pip install pip-tools
+# Initialize the database
+python scripts/migrate_to_new_structure.py init
 
-# Install dependencies from pyproject.toml
-pip-sync requirements.txt
-
-# For development dependencies
-pip install -e ".[dev]"
+# Run the server
+python main.py
 ```
 
-### Initialize the database:
+### Access the Application
 
-```bash
-python migration.py init
+- **Web Interface**: http://127.0.0.1:9000
+- **API Documentation**: http://127.0.0.1:9000/docs
+
+---
+
+## 📁 Project Structure
+
 ```
-
-### Run the server:
-
-```bash
-# Using the original app
-python app.py
-
-# Using the improved app (recommended)
-python app_improved.py
+Choose-for-me/
+├── main.py                    # Application entry point
+├── pyproject.toml            # Project configuration
+├── data/                     # Database files
+├── src/media_picker/         # Main application package
+│   ├── api/                  # API endpoints
+│   ├── core/                 # Configuration & utilities
+│   ├── db/                   # Database models
+│   ├── schemas/              # Data validation
+│   └── services/             # Business logic
+├── static/                   # Frontend assets
+├── templates/               # HTML templates
+├── scripts/                 # Utility scripts
+└── tests/                   # Test suite
 ```
-
-### Visit:
-
-http://127.0.0.1:9000
-
-### API Documentation:
-
-Visit http://127.0.0.1:9000/docs for interactive API documentation.
 
 ---
 
@@ -102,60 +96,6 @@ Visit http://127.0.0.1:9000/docs for interactive API documentation.
 3. Use the filter bar to filter by tags or type
 4. Hit **Spin** to let the wheel choose!
 5. Manage your list: Edit, Mark Done, Archive, or Delete items
-
----
-
-## 🧪 Testing
-
-Run the test suite:
-
-```bash
-pytest tests/
-```
-
-Run with coverage:
-
-```bash
-pytest tests/ --cov=. --cov-report=html
-```
-
----
-
-## 📁 Project Structure
-
-```
-Choose-for-me/
-├── app.py                 # Original application
-├── app_improved.py        # Improved application with database
-├── database.py           # Database models and configuration
-├── models.py            # Pydantic models for validation
-├── migration.py         # Database migration utilities
-├── requirements.txt     # Python dependencies
-├── pyproject.toml      # Project configuration
-├── static/
-│   ├── app.js          # Frontend JavaScript (improved with error handling)
-│   └── styles.css      # CSS styles
-├── templates/
-│   └── index.html      # HTML template
-└── tests/
-    └── test_api.py     # API tests
-```
-
----
-
-## 🔧 Configuration
-
-Copy the example environment file and configure as needed:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` to configure:
-- Database URL
-- Debug settings
-- Allowed origins for CORS
-- Server host and port
 
 ---
 
@@ -172,86 +112,66 @@ Edit `.env` to configure:
 
 ### Utility
 - `GET /health` - Health check
-- `GET /docs` - API documentation
 
 ---
 
-## 🚀 Improvements Made
+## 🧪 Testing
 
-### ✅ **Completed Improvements**
+```bash
+# Run tests
+uv run pytest tests/
 
-1. **Persistent Storage**: SQLite database instead of in-memory storage
-2. **Input Validation**: Pydantic models with comprehensive validation
-3. **Error Handling**: Proper exception handling and user feedback
-4. **Code Organization**: Separated concerns into multiple modules
-5. **Security**: More restrictive CORS, input sanitization
-6. **Testing**: Comprehensive test suite
-7. **Documentation**: API docs and improved README
-8. **Development Setup**: pyproject.toml, requirements.txt, .env configuration
-9. **Frontend Improvements**: Error handling, user feedback, confirmation dialogs
-10. **Migration Tools**: Utilities to migrate from old format
-
-### 🎯 **Future Enhancements**
-
-1. **Cover Art Integration**: Auto-fetch from TMDB (movies) or IGDB (games)
-2. **User Authentication**: Multi-user support with accounts
-3. **Advanced Filtering**: Date ranges, ratings, custom fields
-4. **Export/Import**: Backup and restore functionality
-5. **Mobile App**: React Native or Flutter companion app
-6. **Recommendations**: AI-powered suggestions based on preferences
-7. **Social Features**: Share lists, collaborative filtering
+# Run with coverage
+uv run pytest tests/ --cov=src --cov-report=html
+```
 
 ---
 
-## 🛠️ Development
+## 🔧 Development
 
 ### Code Quality
 
 ```bash
-# Format code
-black .
+# Run linting and formatting checks
+python scripts/run_checks.py
 
-# Sort imports
-isort .
-
-# Lint code
-flake8 .
-
-# Type checking
-mypy .
+# Or run individually
+uv run ruff check .
+uv run ruff format .
+uv run mypy src/
 ```
 
 ### Database Operations
 
 ```bash
 # Initialize database
-python migration.py init
+python scripts/migrate_to_new_structure.py init
 
-# Migrate from JSON backup
-python migration.py migrate backup.json
+# Validate database
+python scripts/migrate_to_new_structure.py validate
 
-# Export to JSON
-python migration.py export backup.json
+# Export data
+python scripts/migrate_to_new_structure.py export backup.json
+
+# Import data
+python scripts/migrate_to_new_structure.py migrate backup.json
 ```
 
 ---
 
-## ⚠️ Migration from Original Version
+## 🔧 Configuration
 
-If you're upgrading from the original version:
-
-1. **Backup your data** (if you have any running instance)
-2. Install the new requirements: `pip install -r requirements.txt`
-3. Initialize the database: `python migration.py init`
-4. Use the improved app: `python app_improved.py`
-
-The original `app.py` is preserved for compatibility, but `app_improved.py` is recommended for new installations.
+Copy `.env.example` to `.env` and configure:
+- Database URL
+- Debug settings
+- CORS origins
+- Server host and port
 
 ---
 
 ## 📄 License
 
-MIT License - feel free to use this project for personal or commercial purposes.
+MIT License
 
 ---
 
@@ -260,12 +180,5 @@ MIT License - feel free to use this project for personal or commercial purposes.
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite
-6. Submit a pull request
-
----
-
-## 🐛 Bug Reports & Feature Requests
-
-Please use the GitHub issues page to report bugs or request new features.
+4. Run tests and quality checks
+5. Submit a pull request

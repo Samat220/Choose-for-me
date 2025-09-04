@@ -1,14 +1,16 @@
+import contextlib
 import os
 import pathlib
 import tempfile
 
 import pytest
-from app_improved import app
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from database import Base, get_db
+from main import app
+from src.media_picker.api.dependencies import get_db
+from src.media_picker.db.database import Base
 
 
 # Create a temporary database for testing
@@ -32,11 +34,15 @@ def db_session():
 
     app.dependency_overrides[get_db] = override_get_db
 
-    yield TestingSessionLocal()
+    db = TestingSessionLocal()
+    yield db
 
     # Clean up
+    db.close()
     os.close(db_fd)
-    pathlib.Path(db_path).unlink()
+    with contextlib.suppress(PermissionError, FileNotFoundError):
+        # On Windows, file might still be in use, ignore cleanup errors
+        pathlib.Path(db_path).unlink()
     app.dependency_overrides.clear()
 
 
@@ -71,13 +77,13 @@ def test_add_item(client, db_session):
     }
 
     response = client.post("/api/items", json=item_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     data = response.json()
     assert data["title"] == "Test Game"
     assert data["type"] == "game"
     assert data["platform"] == "PC"
-    assert data["tags"] == ["RPG", "Action"]
+    assert data["tags"] == ["rpg", "action"]  # tags are lowercased
     assert "id" in data
 
 
@@ -132,7 +138,7 @@ def test_delete_item(client, db_session):
 
     # Delete the item
     response = client.delete(f"/api/items?id={item_id}")
-    assert response.status_code == 200
+    assert response.status_code == 204  # No Content is correct for DELETE
 
     # Verify it's deleted
     response = client.get("/api/items")
