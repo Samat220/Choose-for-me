@@ -220,7 +220,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
     def count_total(self) -> int:
         """Count total non-deleted items."""
         try:
-            return self.db.query(MediaItem).filter(not MediaItem.is_deleted).count()
+            return self.db.query(MediaItem).filter(~MediaItem.is_deleted).count()
         except Exception as e:
             logger.error(f"Error counting items: {e}")
             raise DatabaseError(f"Failed to count items: {e}") from e
@@ -230,7 +230,7 @@ class MediaItemRepository(BaseRepository[MediaItem]):
         try:
             return (
                 self.db.query(MediaItem)
-                .filter(and_(MediaItem.status == status, not MediaItem.is_deleted))
+                .filter(and_(MediaItem.status == status, ~MediaItem.is_deleted))
                 .count()
             )
         except Exception as e:

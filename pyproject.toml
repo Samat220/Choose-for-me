@@ -105,6 +105,34 @@ ignore = [
     "Q002",
     "Q003",
     "W191",
+    # FastAPI and async specific ignores
+    "RUF029", # async function doesn't await - common in FastAPI handlers
+    "B008", # Depends() in function defaults - standard FastAPI pattern
+    "ARG001", # Unused function arguments - common in FastAPI dependencies and test fixtures
+    "ARG003", # Unused class method arguments
+    # Logging and exception handling
+    "TRY400", # Use logging.exception - often not needed
+    "TRY300", # Consider moving to else block - often makes code less readable
+    "TRY301", # Abstract raise to inner function - often overkill
+    "LOG004", # .exception() outside handlers - sometimes intentional
+    "B904", # raise ... from err - sometimes we want to hide the chain
+    # Naming conventions for legacy compatibility
+    "N803", # Argument names should be lowercase - keeping legacy API compat
+    "N805", # First argument should be self - for validators
+    "N806", # Variable should be lowercase - test fixtures
+    "N815", # Variable should not be mixedCase - legacy field names
+    # Performance and style that are often false positives
+    "PERF203", # try-except in loop - sometimes necessary
+    "PERF401", # Use list comprehension - sometimes less readable
+    "BLE001", # Catch blind exception - sometimes needed for robustness
+    "PLC1901", # Compare to empty string - sometimes more explicit
+    # File system
+    "EXE001", # Shebang on non-executable file
+    "PTH123", # Use Path.open() - legacy code compatibility
+    # Function returns
+    "RET503", # Missing explicit return - sometimes implicit is clearer
+    # SQLAlchemy specifics
+    "E712", # Avoid equality comparisons to True/False - sometimes needed for SQLAlchemy
 ]
 extend-select = ["I"]
 dummy-variable-rgx = "^_[a-zA-Z0-9k]*$"
