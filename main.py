@@ -7,16 +7,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import ValidationError
+from pydantic import ValidationError as PydanticValidationError
 
 from src.media_picker.api.exception_handlers import (
+    custom_validation_exception_handler,
     general_exception_handler,
     media_picker_exception_handler,
     validation_exception_handler,
 )
 from src.media_picker.api.media import router as media_router
 from src.media_picker.core.config import settings
-from src.media_picker.core.exceptions import MediaPickerError
+from src.media_picker.core.exceptions import MediaPickerError, ValidationError as CustomValidationError
 from src.media_picker.core.logging import get_logger
 from src.media_picker.db.database import create_tables
 
@@ -31,6 +32,8 @@ async def lifespan(_app: FastAPI):
     # Startup
     logger.info("Starting up Media Picker application")
     try:
+        # Ensure data directory exists before creating database
+        settings.data_dir.mkdir(parents=True, exist_ok=True)
         create_tables()
         logger.info("Database initialization completed")
     except Exception as e:
@@ -65,7 +68,8 @@ def create_app() -> FastAPI:
 
     # Register exception handlers
     app.add_exception_handler(MediaPickerError, media_picker_exception_handler)
-    app.add_exception_handler(ValidationError, validation_exception_handler)
+    app.add_exception_handler(CustomValidationError, custom_validation_exception_handler)
+    app.add_exception_handler(PydanticValidationError, validation_exception_handler)
     app.add_exception_handler(Exception, general_exception_handler)
 
     # Include API routers

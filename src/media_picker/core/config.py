@@ -27,7 +27,7 @@ class Settings(BaseSettings):
 
     # Server Configuration
     host: str = Field(default="127.0.0.1", description="Server host")
-    port: int = Field(default=8000, description="Server port", gt=0, le=65535)
+    port: int = Field(default=9000, description="Server port", gt=0, le=65535)
     reload: bool = Field(default=False, description="Auto-reload on changes")
     workers: int = Field(default=1, description="Number of worker processes", gt=0, le=8)
 
@@ -44,7 +44,7 @@ class Settings(BaseSettings):
         min_length=32,
     )
     allowed_origins: list[str] = Field(
-        default=["http://localhost:3000", "http://127.0.0.1:8000"],
+        default=["http://localhost:3000", "http://127.0.0.1:9000", "http://127.0.0.1:8000"],
         description="CORS allowed origins",
     )
 

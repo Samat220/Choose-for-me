@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,20 +8,27 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
+
 <body id="appBody" class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-950 to-black text-slate-100">
   <header class="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-slate-900/50 border-b border-slate-800">
     <div class="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="h-9 w-9 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 grid place-content-center shadow shadow-cyan-500/20">🎯</div>
+        <div
+          class="h-9 w-9 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 grid place-content-center shadow shadow-cyan-500/20">
+          🎯</div>
         <div>
           <h1 class="text-xl font-semibold tracking-tight">Media Picker</h1>
           <p class="text-xs text-slate-400">Games • Movies/TV • Spin by genre</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button id="themeBtn" class="rounded-xl px-3 py-2 text-sm border border-slate-700/60 hover:border-slate-500" onclick="toggleTheme()">🌙</button>
-        <button class="rounded-xl px-3 py-2 text-sm border border-slate-700/60 hover:border-slate-500" onclick="openAdd()">Add</button>
-        <button class="rounded-xl px-3 py-2 text-sm font-medium bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/20" onclick="spinWheel()">Spin</button>
+        <button id="themeBtn" class="rounded-xl px-3 py-2 text-sm border border-slate-700/60 hover:border-slate-500"
+          onclick="toggleTheme()">🌙</button>
+        <button class="rounded-xl px-3 py-2 text-sm border border-slate-700/60 hover:border-slate-500"
+          onclick="openAdd()">Add</button>
+        <button
+          class="rounded-xl px-3 py-2 text-sm font-medium bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/20"
+          onclick="spinWheel()">Spin</button>
       </div>
     </div>
   </header>
@@ -30,12 +38,16 @@
       <div class="flex items-center gap-2">
         <button class="chip rounded-xl px-3 py-1.5 text-sm" data-tab="all" onclick="setTab('all')">All</button>
         <button class="chip rounded-xl px-3 py-1.5 text-sm" data-tab="game" onclick="setTab('game')">Games</button>
-        <button class="chip rounded-xl px-3 py-1.5 text-sm" data-tab="movie" onclick="setTab('movie')">Movies/TV</button>
+        <button class="chip rounded-xl px-3 py-1.5 text-sm" data-tab="movie"
+          onclick="setTab('movie')">Movies/TV</button>
       </div>
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-2">
-          <input id="tagsInput" class="rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500" placeholder="Filter by tags (comma separated)" />
-          <button class="rounded-xl px-3 py-2 text-sm border border-slate-700 hover:bg-slate-800/50" onclick="applyTags()">Apply</button>
+          <input id="tagsInput"
+            class="rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500"
+            placeholder="Filter by tags (comma separated)" />
+          <button class="rounded-xl px-3 py-2 text-sm border border-slate-700 hover:bg-slate-800/50"
+            onclick="applyTags()">Apply</button>
         </div>
         <label class="text-sm inline-flex items-center gap-2">
           <input id="showArchived" type="checkbox" class="accent-indigo-500" onchange="loadItems()" />
@@ -44,47 +56,64 @@
       </div>
     </div>
 
-    <div id="empty" class="hidden rounded-3xl border border-dashed border-slate-800/70 bg-slate-900/30 p-10 text-center">
+    <div id="empty"
+      class="hidden rounded-3xl border border-dashed border-slate-800/70 bg-slate-900/30 p-10 text-center">
       <div class="mx-auto mb-3 h-16 w-16 rounded-2xl grid place-content-center bg-slate-800/50">📚</div>
       <h3 class="text-lg font-semibold">Nothing here yet</h3>
       <p class="text-sm text-slate-400 mt-1">Add a few items to get started.</p>
-      <button class="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2 font-medium shadow-lg shadow-indigo-500/20 text-white" onclick="openAdd()">Add your first</button>
+      <button
+        class="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2 font-medium shadow-lg shadow-indigo-500/20 text-white"
+        onclick="openAdd()">Add your first</button>
     </div>
 
     <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
 
     <div id="wheelWrap" class="hidden mt-8 flex flex-col items-center">
       <div class="relative w-72 h-72">
-        <div id="wheel" class="w-72 h-72 rounded-full border-4 border-slate-700 overflow-hidden transition-[transform] duration-[3500ms] ease-[cubic-bezier(0.33,1,0.68,1)]"></div>
+        <div id="wheel" class="w-72 h-72 rounded-full border-4 border-slate-700 overflow-hidden will-change-transform">
+        </div>
         <div class="pointer absolute -top-2 left-1/2 -translate-x-1/2"></div>
       </div>
       <div id="wheelLegend" class="mt-3 text-xs text-slate-400"></div>
     </div>
 
-    <div id="winnerPanel" class="hidden mt-8 p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/30"></div>
+    <div id="winnerPanel"
+      class="hidden mt-8 p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/30">
+    </div>
   </main>
 
   <dialog id="addDialog" class="backdrop:bg-black/60 rounded-2xl">
     <form method="dialog" class="w-[90vw] max-w-md rounded-2xl p-5 bg-slate-900 border border-slate-800 text-slate-100">
       <h3 class="text-lg font-semibold mb-3" id="dialogTitle">Add Item</h3>
       <label class="text-sm">Type *</label>
-      <select id="typeInput" class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500" onchange="syncPlatformOptions()">
+      <select id="typeInput"
+        class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500"
+        onchange="syncPlatformOptions()">
         <option value="game">Game</option>
         <option value="movie">Movie/TV</option>
       </select>
       <label class="text-sm mt-3 block">Title *</label>
-      <input id="titleInput" class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500" placeholder="Name" />
+      <input id="titleInput"
+        class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500"
+        placeholder="Name" />
       <label class="text-sm mt-3 block">Platform</label>
-      <select id="platformInput" class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500"></select>
+      <select id="platformInput"
+        class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500"></select>
       <label class="text-sm mt-3 block">Cover URL</label>
-      <input id="coverInput" class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500" placeholder="https://..." />
+      <input id="coverInput"
+        class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500"
+        placeholder="https://..." />
       <label class="text-sm mt-3 block">Tags (comma separated)</label>
-      <input id="tagsAddInput" class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500" placeholder="RPG, Action, Sci-Fi" />
+      <input id="tagsAddInput"
+        class="mt-1 w-full rounded-xl px-3 py-2 border border-slate-700 bg-slate-950 focus:outline-none focus:border-slate-500"
+        placeholder="RPG, Action, Sci-Fi" />
       <div class="flex justify-between items-center pt-4">
         <div id="editStatusNote" class="text-xs text-slate-400 hidden"></div>
         <div class="flex gap-2">
-          <button class="rounded-xl px-4 py-2 border border-slate-700 hover:bg-slate-800/60" onclick="document.getElementById('addDialog').close()">Cancel</button>
-          <button class="rounded-xl px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white" onclick="submitAdd(event)">Save</button>
+          <button class="rounded-xl px-4 py-2 border border-slate-700 hover:bg-slate-800/60"
+            onclick="document.getElementById('addDialog').close()">Cancel</button>
+          <button class="rounded-xl px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white"
+            onclick="submitAdd(event)">Save</button>
         </div>
       </div>
     </form>
@@ -92,4 +121,5 @@
 
   <script src="/static/app.js" defer></script>
 </body>
+
 </html>
