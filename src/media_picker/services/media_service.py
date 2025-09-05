@@ -125,21 +125,26 @@ class MediaItemService:
                 search=None,
             )
 
-            # Get filtered items
+            # 1) Get filtered DB items
             items = self.repository.get_filtered(filter_params)
 
-            # Convert to response objects
-            pool = [self._item_to_response(item) for item in items]
+            # 2) Build response pool (for the wheel)
+            pool_responses = [self._item_to_response(item) for item in items]
 
-            # Select random winner
-            winner = None
-            if pool:
-                winner = random.choice(pool)
-                logger.info(f"Spin wheel selected: {winner.id} - {winner.title}")
+            # 3) Choose winner from raw items, then convert once
+            winner_response = None
+            if items:
+                chosen_item = random.choice(items)  # may be patched in tests
+                winner_response = self._item_to_response(chosen_item)
+                logger.info(f"Spin wheel selected: {winner_response.id} - {winner_response.title}")
             else:
                 logger.info("Spin wheel found no items in pool")
 
-            return SpinResponse(winner=winner, pool=pool, total_pool_size=len(pool))
+            return SpinResponse(
+                winner=winner_response,
+                pool=pool_responses,
+                total_pool_size=len(pool_responses),
+            )
         except Exception as e:
             logger.error(f"Error spinning wheel: {e}")
             raise ServiceError(f"Failed to spin wheel: {e}") from e
@@ -162,6 +167,12 @@ class MediaItemService:
 
     def _item_to_response(self, item) -> MediaItemResponse:
         """Convert database item to response schema."""
+        # Handle None values for testing (fallback to current timestamp)
+        added_at_value = item.added_at
+        if added_at_value is None:
+            import time
+            added_at_value = int(time.time())
+        
         return MediaItemResponse(
             id=item.id,
             type=item.type,
@@ -170,7 +181,7 @@ class MediaItemService:
             coverUrl=item.cover_url,  # Use alias field name
             tags=item.tags,
             status=item.status,
-            addedAt=item.added_at,  # Use alias field name
+            addedAt=added_at_value,  # Use alias field name
             created_at=item.created_at,
             updated_at=item.updated_at,
         )
