@@ -2,13 +2,14 @@
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from pydantic import ValidationError
+from pydantic import ValidationError as PydanticValidationError
 
 from ..core.exceptions import (
     DatabaseError,
     ItemNotFoundError,
     MediaPickerError,
     ServiceError,
+    ValidationError as CustomValidationError,
 )
 from ..core.logging import get_logger
 
@@ -22,7 +23,7 @@ async def media_picker_exception_handler(request: Request, exc: MediaPickerError
     # Map exception types to HTTP status codes
     status_code_map = {
         ItemNotFoundError: 404,
-        ValidationError: 422,
+        CustomValidationError: 422,
         DatabaseError: 500,
         ServiceError: 500,
     }
@@ -39,7 +40,9 @@ async def media_picker_exception_handler(request: Request, exc: MediaPickerError
     )
 
 
-async def validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
+async def validation_exception_handler(
+    request: Request, exc: PydanticValidationError
+) -> JSONResponse:
     """Handle Pydantic validation errors."""
     logger.warning(f"Validation error: {exc}")
 
@@ -60,6 +63,22 @@ async def validation_exception_handler(request: Request, exc: ValidationError) -
             "error": "Validation failed",
             "type": "ValidationError",
             "details": {"errors": errors},
+        },
+    )
+
+
+async def custom_validation_exception_handler(
+    request: Request, exc: CustomValidationError
+) -> JSONResponse:
+    """Handle custom validation errors."""
+    logger.warning(f"Custom validation error: {exc.message}", extra={"details": exc.details})
+
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": exc.message,
+            "type": exc.__class__.__name__,
+            "details": exc.details,
         },
     )
 

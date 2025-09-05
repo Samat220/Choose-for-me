@@ -110,6 +110,7 @@ ignore = [
     "RUF029", # async function doesn't await - common in FastAPI handlers
     "B008", # Depends() in function defaults - standard FastAPI pattern
     "ARG001", # Unused function arguments - common in FastAPI dependencies and test fixtures
+    "ARG002", # Unused method arguments - common in pytest fixtures like db_session
     "ARG003", # Unused class method arguments
     # Logging and exception handling
     "TRY400", # Use logging.exception - often not needed
@@ -161,9 +162,10 @@ section-order = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = ["test_*.py"]
+python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+pythonpath = ["src"]
 addopts = "-v --tb=short --strict-markers"
 markers = [
     "slow: marks tests as slow",

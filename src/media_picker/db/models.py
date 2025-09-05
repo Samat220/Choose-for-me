@@ -143,6 +143,7 @@ class MediaItem(Base):
             "addedAt": "added_at",
         }
 
+        has_updates = False
         for key, value in data.items():
             # Skip None values and computed fields
             if value is None or key in ("id", "created_at", "updated_at"):
@@ -154,8 +155,14 @@ class MediaItem(Base):
             # Special handling for tags
             if key == "tags" and hasattr(self, "tags"):
                 self.tags = value
+                has_updates = True
             elif hasattr(self, field_name):
                 setattr(self, field_name, value)
+                has_updates = True
+
+        # Set updated_at timestamp if there were updates
+        if has_updates:
+            self.updated_at = datetime.now()
 
     @classmethod
     def create_from_dict(cls, data: Dict[str, Any]) -> "MediaItem":
@@ -169,18 +176,37 @@ class MediaItem(Base):
         mapped_data = {}
         tags_value = None
 
+        # Filter out invalid fields and apply mappings
         for key, value in data.items():
             if key == "tags":
                 tags_value = value
             elif key in field_mapping:
                 mapped_data[field_mapping[key]] = value
-            elif key not in ("id", "created_at", "updated_at"):
+            elif key in (
+                "type",
+                "title",
+                "platform",
+                "cover_url",
+                "status",
+                "added_at",
+                "is_deleted",
+            ):
                 mapped_data[key] = value
+            # Ignore unknown fields silently
 
+        # Set defaults for required fields if not provided
+        if "status" not in mapped_data:
+            mapped_data["status"] = "active"
+        if "is_deleted" not in mapped_data:
+            mapped_data["is_deleted"] = False
+        if "added_at" not in mapped_data:
+            mapped_data["added_at"] = int(time.time())
+
+        # Don't set id, created_at, updated_at - let SQLAlchemy handle defaults
         # Create instance
         instance = cls(**mapped_data)
 
-        # Set tags separately
+        # Set tags separately (defaults to empty list in property)
         if tags_value is not None:
             instance.tags = tags_value
 

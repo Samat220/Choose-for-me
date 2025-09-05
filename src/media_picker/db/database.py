@@ -14,23 +14,32 @@ from ..core.logging import get_logger
 logger = get_logger("database")
 
 # Create database engine with optimized settings
+is_sqlite = settings.database_url.startswith("sqlite")
+is_memory = (
+    settings.database_url.endswith(":memory:")
+    or settings.database_url.endswith(":///:memory:")
+    or ":memory:" in settings.database_url
+)
+
 engine_kwargs: dict[str, Any] = {
     "echo": settings.debug,  # Log SQL queries in debug mode
     "future": True,  # Use SQLAlchemy 2.0 style
 }
 
 # SQLite-specific optimizations
-if settings.database_url.startswith("sqlite"):
-    engine_kwargs.update(
-        {
-            "connect_args": {
-                "check_same_thread": False,
-                "timeout": 30,
-            },
-            "poolclass": StaticPool,
-            "pool_pre_ping": True,
-        }
-    )
+if is_sqlite:
+    connect_args = {
+        "check_same_thread": False,
+        "timeout": 30,
+    }
+    engine_kwargs["connect_args"] = connect_args
+
+    # Only use StaticPool for in-memory databases
+    if is_memory:
+        engine_kwargs["poolclass"] = StaticPool
+    # For file-based SQLite, use default pooling for better concurrency
+
+    engine_kwargs["pool_pre_ping"] = True
 
 engine = create_engine(settings.database_url, **engine_kwargs)
 

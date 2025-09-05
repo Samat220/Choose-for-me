@@ -56,6 +56,27 @@ PLATFORM_MAPPINGS = {
     },
 }
 
+# Platform aliases to normalize user input
+MOVIE_PLATFORM_ALIASES = {
+    "amazon": "Amazon Prime",
+    "amazon prime": "Amazon Prime",
+    "netflix": "Netflix",
+    "apple tv": "Apple TV+",
+    "apple tv+": "Apple TV+",
+    "disney": "Disney+",
+    "disney+": "Disney+",
+    "hbo": "HBO Max",
+    "hbo max": "HBO Max",
+    "crunchyroll": "Crunchyroll",
+    "ororo.tv": "Ororo.tv",
+    "ororo": "Ororo.tv",
+    "cinema": "Cinema",
+    "blu-ray": "Blu-ray",
+    "bluray": "Blu-ray",
+    "dvd": "DVD",
+    "hulu": "Hulu",
+}
+
 
 class TagSchema(BaseSchema):
     """Individual tag schema."""
@@ -105,11 +126,24 @@ class MediaItemBase(BaseSchema):
 
     @field_validator("platform")
     @classmethod
-    def validate_platform(cls, value: Optional[str]) -> Optional[str]:
-        """Validate platform based on media type."""
+    def validate_platform(cls, value: Optional[str], info) -> Optional[str]:
+        """Validate platform based on media type with alias support."""
         if value is None:
             return None
-        return value.strip()
+
+        cleaned = value.strip()
+        if not cleaned:
+            return None
+
+        # Get the media type from the model data
+        media_type = getattr(info, "data", {}).get("type") if info else None
+
+        # For movies, normalize platform aliases
+        if media_type == "movie":
+            normalized = MOVIE_PLATFORM_ALIASES.get(cleaned.lower(), cleaned)
+            return normalized
+
+        return cleaned
 
     @field_validator("cover_url")
     @classmethod
@@ -236,11 +270,24 @@ class MediaItemUpdate(BaseSchema):
 
     @field_validator("platform")
     @classmethod
-    def validate_platform(cls, value: Optional[str]) -> Optional[str]:
-        """Validate platform."""
+    def validate_platform(cls, value: Optional[str], info) -> Optional[str]:
+        """Validate platform with alias support."""
         if value is None:
             return None
-        return value.strip()
+
+        cleaned = value.strip()
+        if not cleaned:
+            return None
+
+        # Get the media type from the model data
+        media_type = getattr(info, "data", {}).get("type") if info else None
+
+        # For movies, normalize platform aliases
+        if media_type == "movie":
+            normalized = MOVIE_PLATFORM_ALIASES.get(cleaned.lower(), cleaned)
+            return normalized
+
+        return cleaned
 
     @field_validator("cover_url")
     @classmethod
