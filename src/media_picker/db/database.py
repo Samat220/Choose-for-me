@@ -6,7 +6,7 @@ from typing import Any, Generator
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy.pool import StaticPool, NullPool
+from sqlalchemy.pool import StaticPool
 
 from ..core.config import settings
 from ..core.logging import get_logger

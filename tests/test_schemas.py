@@ -1,16 +1,19 @@
 """Tests for media schemas"""
-import pytest
+
 from datetime import datetime
+
+import pytest
 from pydantic import ValidationError
+
 from src.media_picker.schemas.media import (
     MediaItemCreate,
-    MediaItemUpdate,
-    MediaItemResponse,
     MediaItemFilter,
+    MediaItemResponse,
+    MediaItemUpdate,
+    MediaStatus,
+    MediaType,
     SpinRequest,
     SpinResponse,
-    MediaType,
-    MediaStatus
 )
 
 
@@ -19,10 +22,7 @@ class TestMediaItemCreate:
 
     def test_minimal_creation(self):
         """Test creating with minimal required fields"""
-        data = MediaItemCreate(
-            type="game",
-            title="Test Game"
-        )
+        data = MediaItemCreate(type="game", title="Test Game")
         assert data.type == "game"
         assert data.title == "Test Game"
         assert data.platform is None
@@ -36,7 +36,7 @@ class TestMediaItemCreate:
             title="Test Movie",
             platform="Netflix",
             coverUrl="https://example.com/cover.jpg",
-            tags=["action", "thriller"]
+            tags=["action", "thriller"],
         )
         assert data.type == "movie"
         assert data.title == "Test Movie"
@@ -51,7 +51,7 @@ class TestMediaItemCreate:
                 type="invalid",
                 title="Test",
                 platform="PC",
-                coverUrl="https://example.com/cover.jpg"
+                coverUrl="https://example.com/cover.jpg",
             )
 
     def test_invalid_status(self):
@@ -62,17 +62,14 @@ class TestMediaItemCreate:
                 title="Test Game",
                 platform="PC",
                 coverUrl="https://example.com/cover.jpg",
-                status="invalid"
+                status="invalid",
             )
 
     def test_empty_title(self):
         """Test validation fails for empty title"""
         with pytest.raises(ValidationError):
             MediaItemCreate(
-                type="game",
-                title="",
-                platform="PC",
-                coverUrl="https://example.com/cover.jpg"
+                type="game", title="", platform="PC", coverUrl="https://example.com/cover.jpg"
             )
 
     def test_tags_normalization(self):
@@ -82,7 +79,7 @@ class TestMediaItemCreate:
             title="Test Game",
             platform="PC",
             coverUrl="https://example.com/cover.jpg",
-            tags=["Action", "RPG", "action", ""]
+            tags=["Action", "RPG", "action", ""],
         )
         # Tags should be lowercased and deduplicated
         assert "action" in data.tags
@@ -122,6 +119,7 @@ class TestMediaItemResponse:
     def test_response_creation(self):
         """Test creating response schema"""
         import time
+
         now_timestamp = int(time.time())
         now_datetime = datetime.now()
         data = MediaItemResponse(
@@ -134,7 +132,7 @@ class TestMediaItemResponse:
             status="active",
             addedAt=now_timestamp,
             created_at=now_datetime,
-            updated_at=now_datetime
+            updated_at=now_datetime,
         )
         assert data.id == "test-id"
         assert data.type == "game"
@@ -194,10 +192,7 @@ class TestSpinRequest:
     def test_filtered_spin_request(self):
         """Test creating filtered spin request"""
         request = SpinRequest(
-            type="game",
-            tags="action,rpg",
-            include_archived=True,
-            status="active"
+            type="game", tags="action,rpg", include_archived=True, status="active"
         )
         assert request.type == "game"
         assert request.tags == "action,rpg"
@@ -211,6 +206,7 @@ class TestSpinResponse:
     def test_spin_response_with_winner(self):
         """Test spin response with winner"""
         import time
+
         now_timestamp = int(time.time())
         now_datetime = datetime.now()
         winner = MediaItemResponse(
@@ -223,28 +219,20 @@ class TestSpinResponse:
             status="active",
             addedAt=now_timestamp,
             created_at=now_datetime,
-            updated_at=now_datetime
+            updated_at=now_datetime,
         )
         pool = [winner]
-        
-        response = SpinResponse(
-            winner=winner,
-            pool=pool,
-            total_pool_size=1
-        )
-        
+
+        response = SpinResponse(winner=winner, pool=pool, total_pool_size=1)
+
         assert response.winner == winner
         assert response.pool == pool
         assert response.total_pool_size == 1
 
     def test_spin_response_no_winner(self):
         """Test spin response with no winner"""
-        response = SpinResponse(
-            winner=None,
-            pool=[],
-            total_pool_size=0
-        )
-        
+        response = SpinResponse(winner=None, pool=[], total_pool_size=0)
+
         assert response.winner is None
         assert response.pool == []
         assert response.total_pool_size == 0

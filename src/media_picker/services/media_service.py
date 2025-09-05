@@ -171,8 +171,9 @@ class MediaItemService:
         added_at_value = item.added_at
         if added_at_value is None:
             import time
+
             added_at_value = int(time.time())
-        
+
         return MediaItemResponse(
             id=item.id,
             type=item.type,

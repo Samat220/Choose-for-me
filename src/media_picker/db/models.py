@@ -182,7 +182,15 @@ class MediaItem(Base):
                 tags_value = value
             elif key in field_mapping:
                 mapped_data[field_mapping[key]] = value
-            elif key in ("type", "title", "platform", "cover_url", "status", "added_at", "is_deleted"):
+            elif key in (
+                "type",
+                "title",
+                "platform",
+                "cover_url",
+                "status",
+                "added_at",
+                "is_deleted",
+            ):
                 mapped_data[key] = value
             # Ignore unknown fields silently
 

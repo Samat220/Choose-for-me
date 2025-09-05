@@ -1,7 +1,7 @@
 """Tests for the database models"""
+
 import time
-import pytest
-from datetime import datetime
+
 from src.media_picker.db.models import MediaItem
 
 
@@ -10,13 +10,10 @@ class TestMediaItem:
 
     def test_create_from_dict_minimal(self):
         """Test creating a MediaItem from minimal data"""
-        data = {
-            "title": "Test Game",
-            "type": "game"
-        }
-        
+        data = {"title": "Test Game", "type": "game"}
+
         item = MediaItem.create_from_dict(data)
-        
+
         assert item.title == "Test Game"
         assert item.type == "game"
         assert item.status == "active"  # Default
@@ -35,11 +32,11 @@ class TestMediaItem:
             "platform": "PC",
             "coverUrl": "https://example.com/cover.jpg",
             "tags": ["rpg", "fantasy"],
-            "status": "done"
+            "status": "done",
         }
-        
+
         item = MediaItem.create_from_dict(data)
-        
+
         assert item.title == "Test Game"
         assert item.type == "game"
         assert item.platform == "PC"
@@ -54,7 +51,7 @@ class TestMediaItem:
         data1 = {"title": "Test", "type": "game", "coverUrl": "https://example.com/1.jpg"}
         item1 = MediaItem.create_from_dict(data1)
         assert item1.cover_url == "https://example.com/1.jpg"
-        
+
         # Test with cover_url direct
         data2 = {"title": "Test", "type": "game", "cover_url": "https://example.com/2.jpg"}
         item2 = MediaItem.create_from_dict(data2)
@@ -67,16 +64,16 @@ class TestMediaItem:
         item = MediaItem.create_from_dict(data)
         original_id = item.id
         original_created_at = item.created_at
-        
+
         # Update with new data
         update_data = {
             "title": "Updated Title",
             "platform": "PlayStation",
             "tags": ["action", "shooter"],
-            "status": "done"
+            "status": "done",
         }
         item.update_from_dict(update_data)
-        
+
         # Assert updates
         assert item.title == "Updated Title"
         assert item.platform == "PlayStation"
@@ -90,18 +87,13 @@ class TestMediaItem:
     def test_update_from_dict_partial(self):
         """Test partial updates"""
         # Create initial item
-        data = {
-            "title": "Original",
-            "type": "game",
-            "platform": "PC",
-            "tags": ["rpg"]
-        }
+        data = {"title": "Original", "type": "game", "platform": "PC", "tags": ["rpg"]}
         item = MediaItem.create_from_dict(data)
-        
+
         # Update only title
         update_data = {"title": "New Title"}
         item.update_from_dict(update_data)
-        
+
         # Assert only title changed
         assert item.title == "New Title"
         assert item.platform == "PC"  # Unchanged
@@ -111,45 +103,40 @@ class TestMediaItem:
     def test_update_from_dict_with_none_values(self):
         """Test updates with None values don't override existing data"""
         # Create initial item
-        data = {
-            "title": "Original",
-            "type": "game",
-            "platform": "PC",
-            "tags": ["rpg"]
-        }
+        data = {"title": "Original", "type": "game", "platform": "PC", "tags": ["rpg"]}
         item = MediaItem.create_from_dict(data)
-        
+
         # Update with None values (should be ignored)
         update_data = {
             "title": "New Title",
             "platform": None,  # Should be ignored
-            "tags": None  # Should be ignored
+            "tags": None,  # Should be ignored
         }
         item.update_from_dict(update_data)
-        
+
         # Assert None values were ignored
         assert item.title == "New Title"
         assert item.platform == "PC"  # Unchanged
         assert item.tags == ["rpg"]  # Unchanged
 
-    def test_update_with_coverUrl_alias(self):
+    def test_update_with_cover_url_alias(self):
         """Test updating with coverUrl alias"""
         data = {"title": "Test", "type": "game"}
         item = MediaItem.create_from_dict(data)
-        
+
         # Update with coverUrl alias
         update_data = {"coverUrl": "https://example.com/new.jpg"}
         item.update_from_dict(update_data)
-        
+
         assert item.cover_url == "https://example.com/new.jpg"
 
     def test_id_generation(self):
         """Test that models can be created (ID generation happens at DB level)"""
         data = {"title": "Test", "type": "game"}
-        
+
         item1 = MediaItem.create_from_dict(data)
         item2 = MediaItem.create_from_dict(data)
-        
+
         # Both items are created successfully (actual ID generation happens in DB)
         assert item1.title == "Test"
         assert item2.title == "Test"
@@ -161,14 +148,14 @@ class TestMediaItem:
         data = {"title": "Test", "type": "game"}
         current_time = int(time.time())
         item = MediaItem.create_from_dict(data)
-        
+
         # Check that added_at is set
         assert isinstance(item.added_at, int)
-        
+
         # Check added_at is reasonable (within last minute)
         time_diff = abs(current_time - item.added_at)
         assert time_diff < 60
-        
+
         # Note: created_at and updated_at are set by SQLAlchemy when saved to DB
         assert item.updated_at is None  # Should be None initially
 
@@ -176,21 +163,21 @@ class TestMediaItem:
         """Test that status defaults to 'active'"""
         data = {"title": "Test", "type": "game"}
         item = MediaItem.create_from_dict(data)
-        
+
         assert item.status == "active"
 
     def test_is_deleted_default(self):
         """Test that is_deleted defaults to False"""
         data = {"title": "Test", "type": "game"}
         item = MediaItem.create_from_dict(data)
-        
+
         assert item.is_deleted is False
 
     def test_tags_default(self):
         """Test that tags defaults to empty list"""
         data = {"title": "Test", "type": "game"}
         item = MediaItem.create_from_dict(data)
-        
+
         assert item.tags == []
         assert isinstance(item.tags, list)
 
@@ -199,10 +186,10 @@ class TestMediaItem:
         data = {
             "title": "Test",
             "type": "game",
-            "tags": ["rpg", "fantasy"]  # Assume already normalized by schema
+            "tags": ["rpg", "fantasy"],  # Assume already normalized by schema
         }
         item = MediaItem.create_from_dict(data)
-        
+
         # Model should store tags as provided (normalization happens in schemas)
         assert "rpg" in item.tags
         assert "fantasy" in item.tags
@@ -213,10 +200,10 @@ class TestMediaItem:
             "title": "Test",
             "type": "game",
             "platform": "",  # Empty string
-            "coverUrl": ""   # Empty string
+            "coverUrl": "",  # Empty string
         }
         item = MediaItem.create_from_dict(data)
-        
+
         # Empty strings should be converted to None for optional fields
         assert item.platform is None or item.platform == ""
         assert item.cover_url is None or item.cover_url == ""
@@ -227,10 +214,10 @@ class TestMediaItem:
             "title": "Test",
             "type": "game",
             "invalid_field": "should be ignored",
-            "another_invalid": 123
+            "another_invalid": 123,
         }
         item = MediaItem.create_from_dict(data)
-        
+
         # Should not raise error and should create valid item
         assert item.title == "Test"
         assert item.type == "game"

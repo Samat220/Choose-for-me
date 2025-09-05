@@ -110,6 +110,7 @@ ignore = [
     "RUF029", # async function doesn't await - common in FastAPI handlers
     "B008", # Depends() in function defaults - standard FastAPI pattern
     "ARG001", # Unused function arguments - common in FastAPI dependencies and test fixtures
+    "ARG002", # Unused method arguments - common in pytest fixtures like db_session
     "ARG003", # Unused class method arguments
     # Logging and exception handling
     "TRY400", # Use logging.exception - often not needed

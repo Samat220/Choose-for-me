@@ -1,5 +1,5 @@
 """Tests for core exceptions"""
-import pytest
+
 from src.media_picker.core.exceptions import ItemNotFoundError, ServiceError, ValidationError
 
 
@@ -17,8 +17,8 @@ class TestItemNotFoundError:
         """Test that ItemNotFoundError inherits from MediaPickerError"""
         error = ItemNotFoundError("test")
         assert isinstance(error, Exception)
-        assert hasattr(error, 'message')
-        assert hasattr(error, 'details')
+        assert hasattr(error, "message")
+        assert hasattr(error, "details")
 
 
 class TestServiceError:

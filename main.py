@@ -17,7 +17,10 @@ from src.media_picker.api.exception_handlers import (
 )
 from src.media_picker.api.media import router as media_router
 from src.media_picker.core.config import settings
-from src.media_picker.core.exceptions import MediaPickerError, ValidationError as CustomValidationError
+from src.media_picker.core.exceptions import (
+    MediaPickerError,
+    ValidationError as CustomValidationError,
+)
 from src.media_picker.core.logging import get_logger
 from src.media_picker.db.database import create_tables
 

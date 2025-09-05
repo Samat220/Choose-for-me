@@ -1,15 +1,18 @@
 """Tests for the database repository layer"""
+
 import contextlib
 import os
+import pathlib
 import tempfile
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.media_picker.db.database import Base
-from src.media_picker.db.repository import MediaItemRepository
 from src.media_picker.db.models import MediaItem
-from src.media_picker.schemas.media import MediaItemCreate, MediaItemUpdate, MediaItemFilter
+from src.media_picker.db.repository import MediaItemRepository
+from src.media_picker.schemas.media import MediaItemCreate, MediaItemFilter, MediaItemUpdate
 
 
 class TestMediaItemRepository:
@@ -34,7 +37,7 @@ class TestMediaItemRepository:
         session.close()
         os.close(db_fd)
         with contextlib.suppress(PermissionError, FileNotFoundError):
-            os.unlink(db_path)
+            pathlib.Path(db_path).unlink()
 
     @pytest.fixture
     def repository(self, db_session):
@@ -49,7 +52,7 @@ class TestMediaItemRepository:
             type="game",
             platform="PC",
             coverUrl="https://example.com/cover.jpg",
-            tags=["rpg", "fantasy"]
+            tags=["rpg", "fantasy"],
         )
 
         # Execute
@@ -69,14 +72,33 @@ class TestMediaItemRepository:
         """Test getting all items without filters"""
         # Setup - create test items
         items_data = [
-            {"title": "Game 1", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg", "tags": ["rpg"]},
-            {"title": "Movie 1", "type": "movie", "platform": "Netflix", "coverUrl": "https://example.com/2.jpg", "tags": ["action"]},
+            {
+                "title": "Game 1",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+                "tags": ["rpg"],
+            },
+            {
+                "title": "Movie 1",
+                "type": "movie",
+                "platform": "Netflix",
+                "coverUrl": "https://example.com/2.jpg",
+                "tags": ["action"],
+            },
         ]
         for item_data in items_data:
             repository.create(item_data)
-        
+
         # Create an archived item separately
-        archived_item = repository.create({"title": "Archived Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/3.jpg"})
+        archived_item = repository.create(
+            {
+                "title": "Archived Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/3.jpg",
+            }
+        )
         archived_item.status = "archived"
         db_session.commit()
 
@@ -94,13 +116,25 @@ class TestMediaItemRepository:
         """Test getting filtered items including archived"""
         # Setup
         items_data = [
-            {"title": "Active Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"},
+            {
+                "title": "Active Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+            },
         ]
         for item_data in items_data:
             repository.create(item_data)
-            
+
         # Create an archived item
-        archived_item = repository.create({"title": "Archived Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/2.jpg"})
+        archived_item = repository.create(
+            {
+                "title": "Archived Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/2.jpg",
+            }
+        )
         archived_item.status = "archived"
         db_session.commit()
 
@@ -118,9 +152,24 @@ class TestMediaItemRepository:
         """Test filtering items by type"""
         # Setup
         items_data = [
-            {"title": "Game 1", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"},
-            {"title": "Movie 1", "type": "movie", "platform": "Netflix", "coverUrl": "https://example.com/2.jpg"},
-            {"title": "Game 2", "type": "game", "platform": "PlayStation", "coverUrl": "https://example.com/3.jpg"},
+            {
+                "title": "Game 1",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+            },
+            {
+                "title": "Movie 1",
+                "type": "movie",
+                "platform": "Netflix",
+                "coverUrl": "https://example.com/2.jpg",
+            },
+            {
+                "title": "Game 2",
+                "type": "game",
+                "platform": "PlayStation",
+                "coverUrl": "https://example.com/3.jpg",
+            },
         ]
         for item_data in items_data:
             repository.create(item_data)
@@ -138,9 +187,27 @@ class TestMediaItemRepository:
         """Test filtering items by single tag"""
         # Setup
         items_data = [
-            {"title": "RPG Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg", "tags": ["rpg", "fantasy"]},
-            {"title": "Action Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/2.jpg", "tags": ["action", "shooter"]},
-            {"title": "RPG Movie", "type": "movie", "platform": "Netflix", "coverUrl": "https://example.com/3.jpg", "tags": ["rpg", "drama"]},
+            {
+                "title": "RPG Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+                "tags": ["rpg", "fantasy"],
+            },
+            {
+                "title": "Action Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/2.jpg",
+                "tags": ["action", "shooter"],
+            },
+            {
+                "title": "RPG Movie",
+                "type": "movie",
+                "platform": "Netflix",
+                "coverUrl": "https://example.com/3.jpg",
+                "tags": ["rpg", "drama"],
+            },
         ]
         for item_data in items_data:
             repository.create(item_data)
@@ -159,9 +226,27 @@ class TestMediaItemRepository:
         """Test filtering items by multiple tags (AND logic)"""
         # Setup
         items_data = [
-            {"title": "RPG Fantasy Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg", "tags": ["rpg", "fantasy"]},
-            {"title": "RPG Action Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/2.jpg", "tags": ["rpg", "action"]},
-            {"title": "Fantasy Adventure", "type": "game", "platform": "PC", "coverUrl": "https://example.com/3.jpg", "tags": ["fantasy", "adventure"]},
+            {
+                "title": "RPG Fantasy Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+                "tags": ["rpg", "fantasy"],
+            },
+            {
+                "title": "RPG Action Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/2.jpg",
+                "tags": ["rpg", "action"],
+            },
+            {
+                "title": "Fantasy Adventure",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/3.jpg",
+                "tags": ["fantasy", "adventure"],
+            },
         ]
         for item_data in items_data:
             repository.create(item_data)
@@ -178,9 +263,27 @@ class TestMediaItemRepository:
         """Test combining type and tags filters"""
         # Setup
         items_data = [
-            {"title": "RPG Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg", "tags": ["rpg"]},
-            {"title": "RPG Movie", "type": "movie", "platform": "Netflix", "coverUrl": "https://example.com/2.jpg", "tags": ["rpg"]},
-            {"title": "Action Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/3.jpg", "tags": ["action"]},
+            {
+                "title": "RPG Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+                "tags": ["rpg"],
+            },
+            {
+                "title": "RPG Movie",
+                "type": "movie",
+                "platform": "Netflix",
+                "coverUrl": "https://example.com/2.jpg",
+                "tags": ["rpg"],
+            },
+            {
+                "title": "Action Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/3.jpg",
+                "tags": ["action"],
+            },
         ]
         for item_data in items_data:
             repository.create(item_data)
@@ -197,17 +300,21 @@ class TestMediaItemRepository:
     def test_update_item(self, repository, db_session):
         """Test updating an existing item"""
         # Setup - create an item first
-        item_data = {"title": "Original Title", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"}
+        item_data = {
+            "title": "Original Title",
+            "type": "game",
+            "platform": "PC",
+            "coverUrl": "https://example.com/1.jpg",
+        }
         created_item = repository.create(item_data)
 
         # Execute
         update_data = MediaItemUpdate(
-            title="Updated Title",
-            platform="PlayStation",
-            status="done",
-            tags=["updated", "tag"]
+            title="Updated Title", platform="PlayStation", status="done", tags=["updated", "tag"]
         )
-        result = repository.update(created_item.id, update_data.model_dump(exclude_unset=True, by_alias=True))
+        result = repository.update(
+            created_item.id, update_data.model_dump(exclude_unset=True, by_alias=True)
+        )
 
         # Assert
         assert result is not None
@@ -222,8 +329,9 @@ class TestMediaItemRepository:
         """Test updating a non-existent item"""
         # Execute and expect exception
         update_data = MediaItemUpdate(title="Won't work")
-        
+
         from src.media_picker.core.exceptions import ItemNotFoundError
+
         with pytest.raises(ItemNotFoundError):
             repository.update("nonexistent-id", update_data.model_dump(exclude_unset=True))
 
@@ -235,7 +343,7 @@ class TestMediaItemRepository:
             "type": "game",
             "platform": "PC",
             "tags": ["original"],
-            "coverUrl": "https://example.com/1.jpg"
+            "coverUrl": "https://example.com/1.jpg",
         }
         created_item = repository.create(item_data)
 
@@ -251,7 +359,12 @@ class TestMediaItemRepository:
     def test_delete_item(self, repository, db_session):
         """Test deleting an existing item (soft delete)"""
         # Setup
-        item_data = {"title": "To Delete", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"}
+        item_data = {
+            "title": "To Delete",
+            "type": "game",
+            "platform": "PC",
+            "coverUrl": "https://example.com/1.jpg",
+        }
         created_item = repository.create(item_data)
 
         # Execute
@@ -259,11 +372,11 @@ class TestMediaItemRepository:
 
         # Assert
         assert result is True
-        
+
         # Verify item is soft deleted (not in get_all)
         all_items = repository.get_all()
         assert len(all_items) == 0
-        
+
         # But still exists in database with is_deleted=True
         deleted_item = db_session.query(MediaItem).filter(MediaItem.id == created_item.id).first()
         assert deleted_item is not None
@@ -273,13 +386,19 @@ class TestMediaItemRepository:
         """Test deleting a non-existent item"""
         # Execute and expect exception
         from src.media_picker.core.exceptions import ItemNotFoundError
+
         with pytest.raises(ItemNotFoundError):
             repository.delete("nonexistent-id")
 
     def test_get_by_id(self, repository, db_session):
         """Test getting an item by ID"""
         # Setup
-        item_data = {"title": "Find Me", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"}
+        item_data = {
+            "title": "Find Me",
+            "type": "game",
+            "platform": "PC",
+            "coverUrl": "https://example.com/1.jpg",
+        }
         created_item = repository.create(item_data)
 
         # Execute
@@ -301,7 +420,12 @@ class TestMediaItemRepository:
     def test_get_by_id_soft_deleted(self, repository, db_session):
         """Test getting a soft deleted item by ID returns None"""
         # Setup
-        item_data = {"title": "Deleted Item", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"}
+        item_data = {
+            "title": "Deleted Item",
+            "type": "game",
+            "platform": "PC",
+            "coverUrl": "https://example.com/1.jpg",
+        }
         created_item = repository.create(item_data)
         repository.delete(created_item.id)
 
@@ -314,7 +438,13 @@ class TestMediaItemRepository:
     def test_empty_tags_handling(self, repository, db_session):
         """Test that empty tags are handled correctly"""
         # Setup
-        item_data = {"title": "No Tags Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg", "tags": []}
+        item_data = {
+            "title": "No Tags Game",
+            "type": "game",
+            "platform": "PC",
+            "coverUrl": "https://example.com/1.jpg",
+            "tags": [],
+        }
         created_item = repository.create(item_data)
 
         # Assert
@@ -329,10 +459,20 @@ class TestMediaItemRepository:
         """Test getting items by status"""
         # Setup
         items_data = [
-            {"title": "Active Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"},
-            {"title": "Done Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/2.jpg"},
+            {
+                "title": "Active Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+            },
+            {
+                "title": "Done Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/2.jpg",
+            },
         ]
-        active_item = repository.create(items_data[0])
+        repository.create(items_data[0])  # Create active item
         done_item = repository.create(items_data[1])
         done_item.status = "done"
         db_session.commit()
@@ -349,8 +489,18 @@ class TestMediaItemRepository:
         """Test getting items by type"""
         # Setup
         items_data = [
-            {"title": "Test Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"},
-            {"title": "Test Movie", "type": "movie", "platform": "Netflix", "coverUrl": "https://example.com/2.jpg"},
+            {
+                "title": "Test Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+            },
+            {
+                "title": "Test Movie",
+                "type": "movie",
+                "platform": "Netflix",
+                "coverUrl": "https://example.com/2.jpg",
+            },
         ]
         for item_data in items_data:
             repository.create(item_data)
@@ -367,8 +517,18 @@ class TestMediaItemRepository:
         """Test counting total items"""
         # Setup
         items_data = [
-            {"title": "Game 1", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"},
-            {"title": "Game 2", "type": "game", "platform": "PC", "coverUrl": "https://example.com/2.jpg"},
+            {
+                "title": "Game 1",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+            },
+            {
+                "title": "Game 2",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/2.jpg",
+            },
         ]
         for item_data in items_data:
             repository.create(item_data)
@@ -383,10 +543,20 @@ class TestMediaItemRepository:
         """Test counting items by status"""
         # Setup
         items_data = [
-            {"title": "Active Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"},
-            {"title": "Done Game", "type": "game", "platform": "PC", "coverUrl": "https://example.com/2.jpg"},
+            {
+                "title": "Active Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+            },
+            {
+                "title": "Done Game",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/2.jpg",
+            },
         ]
-        active_item = repository.create(items_data[0])
+        repository.create(items_data[0])  # Create active item
         done_item = repository.create(items_data[1])
         done_item.status = "done"
         db_session.commit()
@@ -400,7 +570,12 @@ class TestMediaItemRepository:
     def test_hard_delete(self, repository, db_session):
         """Test permanently deleting an item"""
         # Setup
-        item_data = {"title": "To Hard Delete", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"}
+        item_data = {
+            "title": "To Hard Delete",
+            "type": "game",
+            "platform": "PC",
+            "coverUrl": "https://example.com/1.jpg",
+        }
         created_item = repository.create(item_data)
 
         # Execute
@@ -408,7 +583,7 @@ class TestMediaItemRepository:
 
         # Assert
         assert result is True
-        
+
         # Verify item is completely removed from database
         deleted_item = db_session.query(MediaItem).filter(MediaItem.id == created_item.id).first()
         assert deleted_item is None
@@ -417,9 +592,24 @@ class TestMediaItemRepository:
         """Test search functionality in filtering"""
         # Setup
         items_data = [
-            {"title": "The Witcher 3", "type": "game", "platform": "PC", "coverUrl": "https://example.com/1.jpg"},
-            {"title": "Witcher Netflix Series", "type": "movie", "platform": "Netflix", "coverUrl": "https://example.com/2.jpg"},
-            {"title": "Cyberpunk 2077", "type": "game", "platform": "PC", "coverUrl": "https://example.com/3.jpg"},
+            {
+                "title": "The Witcher 3",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/1.jpg",
+            },
+            {
+                "title": "Witcher Netflix Series",
+                "type": "movie",
+                "platform": "Netflix",
+                "coverUrl": "https://example.com/2.jpg",
+            },
+            {
+                "title": "Cyberpunk 2077",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": "https://example.com/3.jpg",
+            },
         ]
         for item_data in items_data:
             repository.create(item_data)
@@ -438,7 +628,12 @@ class TestMediaItemRepository:
         """Test pagination functionality"""
         # Setup - create 5 items
         for i in range(5):
-            item_data = {"title": f"Game {i+1}", "type": "game", "platform": "PC", "coverUrl": f"https://example.com/{i+1}.jpg"}
+            item_data = {
+                "title": f"Game {i + 1}",
+                "type": "game",
+                "platform": "PC",
+                "coverUrl": f"https://example.com/{i + 1}.jpg",
+            }
             repository.create(item_data)
 
         # Execute - get page 2 with limit 2
