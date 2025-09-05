@@ -11,37 +11,37 @@ function randomIn(min, max) { return Math.random() * (max - min) + min; }
 // Always multiple turns + slight jitter so it doesn't stop exactly at center
 function computeTargetAngle(index, total) {
   const step = 360 / total;
-  const mid = index * step + step / 2;
-  const baseTurns = randomIn(5.0, 7.5); // 5–7.5 full rotations
-  const jitter = randomIn(-4, 4);       // ±4° final wobble
-  return (baseTurns * 360) + (360 - mid) + jitter;
+  // Calculate the middle of the winning segment
+  const segmentMid = index * step + step / 2;
+
+  // Base rotations for excitement (whole numbers to avoid accumulation errors)
+  const baseTurns = Math.floor(randomIn(5, 8)); // 5-7 full rotations (whole numbers)
+  const jitter = randomIn(-3, 3);              // Small jitter for realism
+
+  // The correct final position (we know this works)
+  const finalPosition = 360 - segmentMid;
+
+  // Add full rotations: ensure we end up at exactly the right position
+  return (baseTurns * 360) + finalPosition + jitter;
 }
 
 // Simple, reliable wheel animation with smooth deceleration
 function animateWheelTo(angle, durationMs) {
   const wheel = document.getElementById('wheel');
 
-  // Get current rotation to build upon it for continuous spinning
-  const currentTransform = wheel.style.transform;
-  const currentAngle = currentTransform.includes('rotate')
-    ? parseFloat(currentTransform.match(/rotate\((-?\d+(?:\.\d+)?)deg\)/)?.[1] || 0)
-    : 0;
-
-  // Add full rotations to the target angle to ensure it spins
-  const finalAngle = currentAngle + angle;
-
-  // Clear any existing transition to prevent conflicts
+  // Reset to 0 and then apply the full target rotation
+  // This ensures accuracy regardless of previous spins
   wheel.style.transition = 'none';
-  wheel.style.transform = `rotate(${currentAngle}deg)`;
+  wheel.style.transform = 'rotate(0deg)';
 
-  // Force a reflow to ensure the above changes take effect
+  // Force a reflow to ensure the reset takes effect
   wheel.offsetHeight;
 
-  // Now apply the smooth animation
+  // Now apply the complete rotation from 0 to the target
   wheel.style.transition = `transform ${durationMs}ms cubic-bezier(0.165, 0.84, 0.44, 1)`;
-  wheel.style.transform = `rotate(${finalAngle}deg)`;
+  wheel.style.transform = `rotate(${angle}deg)`;
 
-  console.log('Animation applied:', { currentAngle, angle, finalAngle, durationMs });
+  console.log('Animation applied:', { startAngle: 0, targetAngle: angle, durationMs });
 }
 
 function initials(name) {
@@ -382,12 +382,16 @@ async function spinWheel() {
     const n = pool.length;
     const index = pool.findIndex(it => it.id === winner.id);
     const wheel = document.getElementById('wheel');
-
-    // Duration scales slightly with list size; longer for smoother animation
-    const durationMs = Math.round(3200 + Math.min(n, 12) * 100); // ~3.2–4.4s
     const targetAngle = computeTargetAngle(index, n);
 
-    console.log('Animation details:', { index, targetAngle, durationMs });
+    // Duration scales with rotation amount for more realistic physics
+    const durationMs = Math.round(3000 + (targetAngle / 360) * 200); // ~3-4.5s based on rotations
+
+    console.log('Spin details:', {
+      winnerTitle: winner.title,
+      rotations: Math.round(targetAngle / 360),
+      durationMs
+    });
 
     isSpinning = true;
 
