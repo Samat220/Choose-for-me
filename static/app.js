@@ -436,7 +436,7 @@ async function spinWheel(event) {
     const targetAngle = computeTargetAngle(index, n);
 
     // Duration scales with rotation amount for more realistic physics
-    const durationMs = Math.round(3000 + (targetAngle / 360) * 200); // ~3-4.5s based on rotations
+    const durationMs = Math.round(2500 + (targetAngle / 360) * 100); // ~2-3s based on rotations
 
     console.log('Spin details:', {
       winnerTitle: winner.title,
