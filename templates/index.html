@@ -28,7 +28,7 @@
           onclick="openAdd()">Add</button>
         <button
           class="rounded-xl px-3 py-2 text-sm font-medium bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/20"
-          onclick="spinWheel()">Spin</button>
+          onclick="event.preventDefault(); spinWheel(event); return false;">Spin</button>
       </div>
     </div>
   </header>

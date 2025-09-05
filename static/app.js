@@ -333,7 +333,23 @@ function buildWheel(pool) {
   const legendBits = [];
   for (let i = 0; i < n; i++) {
     const it = pool[i];
-    const color = colorFromString(it.title);
+    // Check if this title appears multiple times in the pool
+    const duplicateCount = pool.filter(item => item.title === it.title).length;
+    const duplicateIndex = pool.slice(0, i).filter(item => item.title === it.title).length;
+
+    let color;
+    if (duplicateCount > 1) {
+      // For duplicates, add a small hue shift to differentiate them
+      const baseColor = colorFromString(it.title);
+      const hueMatch = baseColor.match(/hsl\((\d+)/);
+      const baseHue = hueMatch ? parseInt(hueMatch[1]) : 0;
+      const shiftedHue = (baseHue + (duplicateIndex * 60)) % 360; // 60° shift per duplicate
+      color = `hsl(${shiftedHue} 80% 45%)`;
+    } else {
+      // Single items use the original beautiful color
+      color = colorFromString(it.title);
+    }
+
     const end = start + step;
     stops.push(`${color} ${start}deg ${end}deg`);
     legendBits.push(`<span class="inline-flex items-center gap-1 mr-2 mb-1"><span class="inline-block w-2.5 h-2.5 rounded" style="background:${color}"></span>${it.title}</span>`);
@@ -343,7 +359,13 @@ function buildWheel(pool) {
   legend.innerHTML = legendBits.join('');
 }
 
-async function spinWheel() {
+async function spinWheel(event) {
+  // Prevent any default behavior that might cause page jumping
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   if (isSpinning) {
     console.log('Already spinning, ignoring...');
     return; // prevent double-trigger during animation
@@ -351,8 +373,37 @@ async function spinWheel() {
 
   console.log('Starting spin...');
 
-  // Hide winner panel immediately when starting a new spin
-  document.getElementById('winnerPanel').classList.add('hidden');
+  // Funny messages to show while spinning
+  const funnyMessages = [
+    "Pondering...", "Cogitating...", "Mulling...", "Ruminating...", "Contemplating...",
+    "Analyzing...", "Synthesizing...", "Bamboozling...", "Wrangling...", "Juggling...",
+    "Fiddling...", "Conjuring...", "Whipping up magic...", "Assembling choices...",
+    "Consulting the universe...", "Channeling randomness...", "Shuffling possibilities...",
+    "Brewing decisions...", "Stirring the pot...", "Rolling the dice...",
+    "Spinning destiny...", "Calculating chaos...", "Mixing mayhem...",
+    "Summoning serendipity...", "Unleashing randomness...", "Tickling fate...",
+    "Confusing algorithms...", "Puzzling over options...", "Deciphering desires..."
+  ];
+
+  const randomMessage = funnyMessages[Math.floor(Math.random() * funnyMessages.length)];
+
+  // Replace winner panel with "looking" message to prevent layout shift
+  const winnerPanel = document.getElementById('winnerPanel');
+  winnerPanel.classList.remove('hidden');
+  winnerPanel.style.visibility = 'visible';
+  winnerPanel.style.opacity = '1';
+  winnerPanel.style.transition = 'opacity 0.3s ease';
+  winnerPanel.innerHTML = `
+    <div class="text-sm uppercase tracking-wider text-blue-400 mb-1">Spinning...</div>
+    <div class="flex items-center gap-3">
+      <div class="h-12 w-12 rounded-xl bg-slate-800/60 border border-slate-700 grid place-content-center">
+        <div class="text-lg">🎲</div>
+      </div>
+      <div>
+        <div class="font-semibold text-lg text-slate-300">Looking for a winner...</div>
+        <div class="text-xs text-slate-400">${randomMessage}</div>
+      </div>
+    </div>`;
 
   try {
     const params = new URLSearchParams();
