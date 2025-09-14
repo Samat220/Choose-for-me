@@ -28,6 +28,10 @@ Built with **FastAPI** + **SQLite** + **Tailwind CSS**.
 - **Input validation** and error handling
 - **API documentation** with FastAPI automatic docs
 
+## Screenshots
+<img width="2095" height="1288" alt="Screenshot from 2025-09-14 09-57-31" src="https://github.com/user-attachments/assets/0f62fb8a-f0df-4890-8281-ec69c78202d9" />
+<img width="2095" height="1288" alt="Screenshot from 2025-09-14 09-57-42" src="https://github.com/user-attachments/assets/cdd6c1bc-75b3-42fb-9a2c-8ce02e3c701c" />
+
 ---
 
 ## 🚀 Getting Started
